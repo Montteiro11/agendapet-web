@@ -1,0 +1,19 @@
+{
+  "name": "agendapet-web",
+  "version": "1.0.0",
+  "description": "AgendaPet Web: painel de agendamentos para o pet shop Patinhas & Cia",
+  "type": "module",
+  "scripts": {
+    "start": "http-server -c-1 -o"
+  },
+  "keywords": [
+    "agendamento",
+    "pet shop",
+    "javascript"
+  ],
+  "author": "Murilo",
+  "license": "MIT",
+  "devDependencies": {
+    "http-server": "^14.1.1"
+  }
+}

@@ -1,0 +1,13 @@
+# Dependências instaladas pelo npm (nunca vão para o GitHub)
+node_modules/
+
+# Logs do npm
+npm-debug.log*
+*.log
+
+# Arquivos de ambiente / segredos
+.env
+
+# Lixo de sistema operacional
+.DS_Store
+Thumbs.db

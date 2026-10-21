@@ -2,7 +2,10 @@
 // api.js – tudo que "conversa" com um servidor usando fetch.
 // - catálogo de serviços (servidor local, US02)
 // - endereço pelo CEP (ViaCEP, US04)
+// - feriados nacionais (BrasilAPI, US05), com cache no localStorage
 // =========================================================
+
+import { lerJSON, salvarJSON } from './storage.js';
 
 const CAMINHO_SERVICOS = './data/servicos.json';
 
@@ -81,4 +84,43 @@ export async function buscarEndereco(cep) {
     cidade: dados.localidade,
     uf: dados.uf,
   };
+}
+
+// ---------------------------------------------------------
+// BrasilAPI – feriados (US05)
+// ---------------------------------------------------------
+
+// Validade do cache: 30 dias em milissegundos (Date.now() trabalha em ms)
+const VALIDADE_FERIADOS_MS = 30 * 24 * 60 * 60 * 1000;
+
+/**
+ * Devolve a lista de feriados nacionais do ano.
+ * Formato de cada item: { date: "2026-12-25", name: "Natal", type: "national" }
+ *
+ * 1. Procura no localStorage (chave "agendapet:feriados:2026").
+ * 2. Se existir e tiver menos de 30 dias, usa o cache: NENHUMA requisição.
+ * 3. Senão, busca na BrasilAPI e guarda a lista com a data da consulta.
+ *
+ * Se a API falhar, a função lança o erro; quem chamou decide o aviso.
+ */
+export async function buscarFeriados(ano) {
+  const chave = `feriados:${ano}`;
+  const cache = lerJSON(chave);
+
+  // ?. evita erro se cache for null. Array.isArray confere que é mesmo uma lista.
+  const cacheValido =
+    Array.isArray(cache?.feriados) && Date.now() - cache.consultadoEm < VALIDADE_FERIADOS_MS;
+
+  if (cacheValido) {
+    return cache.feriados;
+  }
+
+  const resposta = await fetch(`https://brasilapi.com.br/api/feriados/v1/${ano}`);
+  if (!resposta.ok) {
+    throw new Error(`BrasilAPI respondeu HTTP ${resposta.status}.`);
+  }
+
+  const feriados = await resposta.json();
+  salvarJSON(chave, { consultadoEm: Date.now(), feriados });
+  return feriados;
 }

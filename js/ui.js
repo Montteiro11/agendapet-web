@@ -211,6 +211,8 @@ export function limparFormulario() {
   formulario.reset();
   limparErros();
   permitirDomiciliar(false); // sem serviço escolhido, domicílio volta a ficar bloqueado
+  mostrarStatusFeriado('', 'neutro');
+  pedirConfirmacaoFeriado(false);
 }
 
 // =========================================================
@@ -305,4 +307,30 @@ export function preencherEndereco(endereco) {
     formulario.querySelector(`[name="${campo}"]`).value = endereco[campo] ?? '';
   }
   formulario.querySelector('[name="numero"]').focus();
+}
+
+// =========================================================
+// Aviso de feriado (US05)
+// =========================================================
+
+const statusFeriado = formulario.querySelector('[data-feriado-status]');
+const confirmacaoFeriado = formulario.querySelector('[data-feriado-confirmacao]');
+const campoConfirmaFeriado = formulario.querySelector('[name="confirmaFeriado"]');
+
+/** Mensagem embaixo da data. tipo: 'carregando' | 'aviso' | 'erro' | 'neutro'. */
+export function mostrarStatusFeriado(texto, tipo) {
+  statusFeriado.textContent = texto;
+  statusFeriado.classList.remove('campo__status--erro', 'campo__status--aviso');
+  if (tipo === 'erro') statusFeriado.classList.add('campo__status--erro');
+  if (tipo === 'aviso') statusFeriado.classList.add('campo__status--aviso');
+}
+
+/**
+ * Mostra ou esconde o "Agendar mesmo assim".
+ * Escondido = desabilitado e desmarcado (não vai no envio).
+ */
+export function pedirConfirmacaoFeriado(mostrar) {
+  confirmacaoFeriado.hidden = !mostrar;
+  campoConfirmaFeriado.disabled = !mostrar;
+  campoConfirmaFeriado.checked = false;
 }

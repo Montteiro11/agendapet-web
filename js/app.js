@@ -4,7 +4,7 @@
 // a dominio/regras.js para validar e a ui.js para mostrar na tela.
 // =========================================================
 
-import { buscarServicos, buscarEndereco } from './api.js';
+import { buscarServicos, buscarEndereco, buscarFeriados } from './api.js';
 import { validarAgendamento, dataParaISO } from './dominio/regras.js';
 import {
   mostrarCatalogoCarregando,
@@ -26,6 +26,8 @@ import {
   formatarCampoCep,
   mostrarStatusCep,
   preencherEndereco,
+  mostrarStatusFeriado,
+  pedirConfirmacaoFeriado,
 } from './ui.js';
 
 // Lista de serviços vinda do catálogo (US02).
@@ -67,13 +69,17 @@ async function carregarCatalogo() {
 
 const formulario = obterFormulario();
 
-function aoEnviarFormulario(evento) {
+async function aoEnviarFormulario(evento) {
   // Sem isso, o navegador recarregaria a página e perderíamos tudo.
   evento.preventDefault();
   limparSucesso();
 
+  // Se a verificação de feriado ainda está em andamento, espera ela terminar
+  // (senão daria para salvar um feriado sem a confirmação).
+  await verificacaoFeriado;
+
   const dados = lerFormulario();
-  const erros = validarAgendamento(dados);
+  const erros = validarAgendamento(dados, { feriado: feriadoDaData });
 
   // Object.keys devolve a lista de campos com erro. Se tiver algum, para aqui.
   if (Object.keys(erros).length > 0) {
@@ -89,6 +95,7 @@ function aoEnviarFormulario(evento) {
   const agendamento = {
     ...dados,
     nomeServico: servico ? servico.nome : dados.servico,
+    feriado: feriadoDaData, // nome do feriado ou null
     status: 'Agendado',
   };
 
@@ -96,6 +103,7 @@ function aoEnviarFormulario(evento) {
   mostrarAgenda(agendamentos);
 
   limparFormulario();
+  feriadoDaData = null;
   mostrarSucesso(
     `Agendamento salvo: ${agendamento.pet} em ${formatarData(agendamento.data)} às ${agendamento.horario}.`
   );
@@ -165,6 +173,55 @@ campoCep.addEventListener('blur', () => {
   if (digitos.length > 0 && digitos.length < 8) {
     mostrarStatusCep('CEP inválido: digite os 8 números (ex.: 88000-000).', 'erro');
   }
+});
+
+// ---------------------------------------------------------
+// Alerta de feriados (US05)
+// ---------------------------------------------------------
+
+const campoData = formulario.querySelector('[name="data"]');
+
+// Nome do feriado da data escolhida (ou null se não for feriado)
+let feriadoDaData = null;
+
+// Promise da verificação atual. Começa já resolvida (nada para esperar).
+let verificacaoFeriado = Promise.resolve();
+
+async function verificarFeriado(data) {
+  feriadoDaData = null;
+  pedirConfirmacaoFeriado(false);
+
+  if (!data) {
+    mostrarStatusFeriado('', 'neutro');
+    return;
+  }
+
+  mostrarStatusFeriado('Verificando feriados…', 'carregando');
+  const ano = data.slice(0, 4); // "2026-12-25" -> "2026"
+
+  try {
+    const feriados = await buscarFeriados(ano);
+    if (campoData.value !== data) return; // a data mudou enquanto esperávamos
+
+    const feriado = feriados.find((item) => item.date === data);
+    if (feriado) {
+      feriadoDaData = feriado.name;
+      mostrarStatusFeriado(`Atenção: ${formatarData(data)} é feriado (${feriado.name}). Confirme com o tutor.`, 'aviso');
+      pedirConfirmacaoFeriado(true);
+    } else {
+      mostrarStatusFeriado('', 'neutro');
+    }
+  } catch (erro) {
+    if (campoData.value !== data) return;
+    console.warn('[AgendaPet] Falha ao consultar feriados:', erro.message);
+    // A API falhou: avisa, mas deixa continuar (feriadoDaData fica null).
+    mostrarStatusFeriado('Não foi possível verificar feriados agora. Você pode continuar o agendamento.', 'erro');
+  }
+}
+
+campoData.addEventListener('change', () => {
+  // Guardamos a Promise para o submit poder esperar por ela (await).
+  verificacaoFeriado = verificarFeriado(campoData.value);
 });
 
 // ---------------------------------------------------------

@@ -37,3 +37,10 @@ Kanban: https://trello.com/invite/b/6ad7b4650e20d991aeb3ed0c/ATTI16f8530ccd3f003
 - Cada falha tem uma mensagem própria: **CEP inválido** (menos de 8 números), **CEP não encontrado** (o ViaCEP responde `"erro": true`) e **sem conexão** (o `fetch` falha).
 - Os campos de endereço nunca ficam bloqueados: se o ViaCEP estiver fora do ar, a atendente digita o endereço à mão.
 - O endereço é obrigatório apenas quando o atendimento é a domicílio.
+
+### Alerta de feriados (US05)
+- Ao escolher a data, a página consulta `https://brasilapi.com.br/api/feriados/v1/{ano}`.
+- A lista do ano fica guardada no `localStorage` na chave `agendapet:feriados:{ano}`, junto com a data da consulta. **Validade do cache: 30 dias.** Enquanto o cache vale, não há nova requisição, nem depois de recarregar a página.
+- Se a data for feriado, aparece o nome do feriado e o agendamento só é salvo depois de marcar **"Agendar mesmo assim"**.
+- Se a BrasilAPI falhar, aparece o aviso "Não foi possível verificar feriados agora" e o agendamento pode continuar normalmente.
+- Todo acesso ao `localStorage` passa por `js/storage.js`, com `try/catch`: um valor corrompido não quebra a página.

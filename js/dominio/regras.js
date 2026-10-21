@@ -55,7 +55,9 @@ const MENSAGENS_OBRIGATORIAS = {
  * Valida os dados do formulário.
  *
  * @param {object} dados     – valores digitados (tutor, telefone, pet, ...)
- * @param {object} contexto  – informações de fora: { agora } (data/hora atual)
+ * @param {object} contexto  – informações de fora:
+ *                             { agora }   – data/hora atual
+ *                             { feriado } – nome do feriado da data escolhida (ou null)
  * @returns {object} erros   – { nomeDoCampo: 'mensagem' }. Objeto vazio = tudo certo.
  *
  * Por que receber "agora" de fora? Para poder testar com qualquer data
@@ -94,7 +96,12 @@ export function validarAgendamento(dados, contexto = {}) {
     }
   }
 
-  // 5. Endereço (US04): só é obrigatório no atendimento a domicílio.
+  // 5. Feriado (US05): só salva se a atendente confirmar "Agendar mesmo assim"
+  if (contexto.feriado && dados.confirmaFeriado !== 'on') {
+    erros.confirmaFeriado = `Esta data é feriado (${contexto.feriado}). Marque "Agendar mesmo assim" para salvar.`;
+  }
+
+  // 6. Endereço (US04): só é obrigatório no atendimento a domicílio.
   //    Checkbox marcado chega como "on"; desmarcado, nem aparece nos dados.
   if (dados.domiciliar === 'on') {
     Object.assign(erros, validarEndereco(dados));

@@ -94,5 +94,50 @@ export function validarAgendamento(dados, contexto = {}) {
     }
   }
 
+  // 5. Endereço (US04): só é obrigatório no atendimento a domicílio.
+  //    Checkbox marcado chega como "on"; desmarcado, nem aparece nos dados.
+  if (dados.domiciliar === 'on') {
+    Object.assign(erros, validarEndereco(dados));
+  }
+
+  return erros;
+}
+
+// Mensagens dos campos obrigatórios do endereço
+const MENSAGENS_ENDERECO = {
+  logradouro: 'Informe a rua.',
+  numero: 'Informe o número.',
+  bairro: 'Informe o bairro.',
+  cidade: 'Informe a cidade.',
+  uf: 'Informe a UF.',
+};
+
+/** CEP válido = exatamente 8 números (com ou sem hífen). */
+export function cepValido(cep) {
+  return apenasDigitos(cep).length === 8;
+}
+
+/** Valida só os campos de endereço. Devolve { campo: 'mensagem' }. */
+export function validarEndereco(dados) {
+  const erros = {};
+
+  if (!dados.cep) {
+    erros.cep = 'Informe o CEP.';
+  } else if (!cepValido(dados.cep)) {
+    erros.cep = 'CEP inválido: digite 8 números.';
+  }
+
+  for (const [campo, mensagem] of Object.entries(MENSAGENS_ENDERECO)) {
+    if (!dados[campo]) {
+      erros[campo] = mensagem;
+    }
+  }
+
+  // UF: duas letras (ex.: SC). /^[A-Za-z]{2}$/ é uma expressão regular:
+  // ^ = começo, [A-Za-z] = uma letra, {2} = duas vezes, $ = fim.
+  if (dados.uf && !/^[A-Za-z]{2}$/.test(dados.uf)) {
+    erros.uf = 'UF deve ter 2 letras, como SC.';
+  }
+
   return erros;
 }

@@ -431,6 +431,32 @@ h3 {
   font-weight: 600;
 }
 
+/* ---------- 8b3. Feriado (US05) ---------- */
+.campo__status--aviso {
+  color: #7a4a00;
+  font-weight: 600;
+}
+
+.feriado {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--espaco-2);
+  padding: var(--espaco-2) var(--espaco-3);
+  border-left: 4px solid var(--cor-destaque);
+  border-radius: var(--raio);
+  background-color: var(--cor-destaque-claro);
+}
+
+/* Mesmo conflito do .endereco: display: flex venceria o hidden */
+.feriado[hidden] {
+  display: none;
+}
+
+.feriado .campo__erro {
+  flex-basis: 100%;
+}
+
 /* ---------- 8c. Agenda simples (provisória até a US06) ---------- */
 .agenda-simples {
   display: flex;

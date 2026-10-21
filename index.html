@@ -170,6 +170,16 @@
               <input class="campo__entrada" id="data" name="data" type="date"
                      required aria-describedby="erro-data">
               <p class="campo__erro" id="erro-data"></p>
+
+              <!-- US05: aviso de feriado. aria-live anuncia "Verificando…", o nome do feriado etc. -->
+              <p class="campo__status" data-feriado-status aria-live="polite"></p>
+              <!-- Só aparece quando a data é feriado -->
+              <div class="feriado" data-feriado-confirmacao hidden>
+                <input class="campo__marcador" id="confirmaFeriado" name="confirmaFeriado" type="checkbox"
+                       aria-describedby="erro-confirmaFeriado">
+                <label class="campo__rotulo" for="confirmaFeriado">Agendar mesmo assim</label>
+                <p class="campo__erro" id="erro-confirmaFeriado"></p>
+              </div>
             </div>
 
             <div class="campo">

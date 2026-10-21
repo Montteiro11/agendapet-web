@@ -1,0 +1,339 @@
+/* =========================================================
+   AgendaPet Web – estilos
+   Regras do projeto: mobile-first, Flexbox, variáveis CSS,
+   sem !important e sem seletor de id (só classes e tags).
+   ========================================================= */
+
+/* ---------- 1. Variáveis (custom properties) ----------
+   Ficam no :root para valer na página toda.
+   Para mudar a cor da marca, basta trocar aqui. */
+:root {
+  /* Cores */
+  --cor-primaria: #0b5d5b;          /* verde-petróleo da marca */
+  --cor-primaria-escura: #084341;
+  --cor-destaque: #f2a03d;          /* laranja "patinha" (só decorativo) */
+  --cor-destaque-claro: #fde7c8;
+  --cor-fundo: #f7f4ef;
+  --cor-superficie: #ffffff;
+  --cor-borda: #d8d2c7;
+  --cor-texto: #1f2a2e;
+  --cor-texto-suave: #4a5a60;
+  --cor-texto-claro: #ffffff;
+  --cor-erro: #b3261e;
+  --cor-foco: #084341;
+
+  /* Espaçamentos */
+  --espaco-1: 0.25rem;
+  --espaco-2: 0.5rem;
+  --espaco-3: 1rem;
+  --espaco-4: 1.5rem;
+  --espaco-5: 2rem;
+
+  /* Tipografia */
+  --fonte-base: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --tamanho-texto: 1rem;
+  --tamanho-h1: 1.5rem;
+  --tamanho-h2: 1.25rem;
+
+  /* Outros */
+  --raio: 0.75rem;
+  --sombra: 0 2px 8px rgba(31, 42, 46, 0.08);
+  --alvo-toque: 44px;               /* altura mínima confortável para o dedo */
+}
+
+/* ---------- 2. Base ---------- */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;           /* padding não aumenta a largura do elemento */
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  display: flex;                    /* Flexbox: empilha header, main e footer */
+  flex-direction: column;
+  font-family: var(--fonte-base);
+  font-size: var(--tamanho-texto);
+  line-height: 1.5;
+  color: var(--cor-texto);
+  background-color: var(--cor-fundo);
+}
+
+img {
+  display: block;
+  max-width: 100%;                  /* imagem nunca passa da largura da tela */
+}
+
+h1,
+h2,
+h3 {
+  line-height: 1.2;
+}
+
+/* Foco visível para quem navega com Tab (vale para todos os elementos) */
+:focus-visible {
+  outline: 3px solid var(--cor-foco);
+  outline-offset: 3px;
+}
+
+/* ---------- 3. Skip link ----------
+   Fica escondido acima da tela e aparece ao receber foco. */
+.skip-link {
+  position: absolute;
+  top: -100px;
+  left: var(--espaco-3);
+  z-index: 10;
+  padding: var(--espaco-2) var(--espaco-3);
+  border-radius: var(--raio);
+  background-color: var(--cor-superficie);
+  color: var(--cor-primaria-escura);
+  font-weight: 700;
+}
+
+.skip-link:focus {
+  top: var(--espaco-3);
+}
+
+/* ---------- 4. Cabeçalho ---------- */
+.cabecalho {
+  display: flex;
+  flex-direction: column;           /* no celular: marca em cima, menu embaixo */
+  gap: var(--espaco-3);
+  padding: var(--espaco-3);
+  background-color: var(--cor-primaria);
+  color: var(--cor-texto-claro);
+}
+
+.cabecalho__marca {
+  display: flex;
+  align-items: center;
+  gap: var(--espaco-3);
+}
+
+.cabecalho__titulo {
+  margin: 0;
+  font-size: var(--tamanho-h1);
+}
+
+.cabecalho__subtitulo {
+  margin: 0;
+  color: var(--cor-destaque-claro);
+}
+
+/* ---------- 5. Menu ---------- */
+.menu__lista {
+  display: flex;
+  flex-wrap: wrap;                  /* se não couber, quebra para a linha de baixo */
+  gap: var(--espaco-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.menu__link {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--alvo-toque);
+  padding: 0 var(--espaco-3);
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  border-radius: var(--raio);
+  color: var(--cor-texto-claro);
+  text-decoration: none;
+}
+
+.menu__link:hover {
+  background-color: rgba(255, 255, 255, 0.15);
+}
+
+/* Conflito de especificidade (documentado no README):
+   o ":focus-visible" global usa contorno escuro, invisível no fundo verde.
+   ".menu__link:focus-visible" (classe + pseudo-classe = 0,2,0) vence o
+   ":focus-visible" sozinho (0,1,0), sem precisar de !important. */
+.menu__link:focus-visible {
+  outline-color: var(--cor-texto-claro);
+}
+
+/* ---------- 6. Conteúdo principal ---------- */
+.conteudo {
+  flex: 1;                          /* ocupa o espaço que sobra e empurra o rodapé para baixo */
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-4);
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: var(--espaco-3);
+}
+
+.conteudo:focus {
+  outline: none;                    /* o main recebe foco pelo skip link, sem contorno */
+}
+
+.conteudo__secoes {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-4);
+}
+
+/* ---------- 7. Cartões / painéis ---------- */
+.painel,
+.catalogo {
+  padding: var(--espaco-4);
+  border-radius: var(--raio);
+  background-color: var(--cor-superficie);
+  box-shadow: var(--sombra);
+}
+
+.painel__titulo {
+  margin: 0 0 var(--espaco-3);
+  font-size: var(--tamanho-h2);
+  color: var(--cor-primaria-escura);
+}
+
+.painel__texto {
+  margin: 0;
+  color: var(--cor-texto-suave);
+}
+
+/* ---------- 8. Catálogo de serviços (US02) ---------- */
+.catalogo__status {
+  margin: 0 0 var(--espaco-3);
+  color: var(--cor-texto-suave);
+}
+
+.catalogo__status--erro {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--espaco-2);
+  color: var(--cor-erro);
+  font-weight: 600;
+}
+
+.catalogo__lista {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.servico {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-1);
+  padding: var(--espaco-3);
+  border: 1px solid var(--cor-borda);
+  border-left: 4px solid var(--cor-destaque);
+  border-radius: var(--raio);
+  transition: border-color 0.2s;
+}
+
+.servico:hover {
+  border-color: var(--cor-primaria);
+}
+
+.servico__nome {
+  margin: 0;
+  font-size: 1.05rem;
+}
+
+.servico__detalhes {
+  margin: 0;
+  color: var(--cor-texto-suave);
+}
+
+.servico__preco {
+  font-weight: 700;
+  color: var(--cor-primaria-escura);
+}
+
+.etiqueta {
+  align-self: flex-start;
+  padding: 0.125rem var(--espaco-2);
+  border-radius: 999px;
+  background-color: var(--cor-destaque-claro);
+  color: #5c3800;
+  font-size: 0.875rem;
+}
+
+/* ---------- 9. Botões ---------- */
+.botao {
+  min-height: var(--alvo-toque);
+  padding: 0 var(--espaco-4);
+  border: 0;
+  border-radius: var(--raio);
+  background-color: var(--cor-primaria);
+  color: var(--cor-texto-claro);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.botao:hover {
+  background-color: var(--cor-primaria-escura);
+}
+
+/* ---------- 10. Rodapé ---------- */
+.rodape {
+  padding: var(--espaco-3);
+  background-color: #e9e3d9;
+  color: var(--cor-texto-suave);
+  text-align: center;
+  font-size: 0.875rem;
+}
+
+.rodape p {
+  margin: 0;
+}
+
+/* =========================================================
+   Breakpoint 1 – tablet (a partir de 768px)
+   ========================================================= */
+@media (min-width: 768px) {
+  .cabecalho {
+    flex-direction: row;            /* marca à esquerda, menu à direita */
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--espaco-3) var(--espaco-5);
+  }
+
+  .catalogo__lista {
+    flex-direction: row;            /* serviços em 2 colunas */
+    flex-wrap: wrap;
+  }
+
+  .servico {
+    flex: 1 1 calc(50% - var(--espaco-3));
+  }
+}
+
+/* =========================================================
+   Breakpoint 2 – desktop (a partir de 1280px)
+   ========================================================= */
+@media (min-width: 1280px) {
+  .conteudo {
+    flex-direction: row;            /* seções à esquerda, catálogo à direita */
+    align-items: flex-start;
+  }
+
+  .conteudo__secoes {
+    flex: 2;
+  }
+
+  .catalogo {
+    flex: 1;
+    position: sticky;               /* catálogo acompanha a rolagem */
+    top: var(--espaco-3);
+  }
+
+  .catalogo__lista {
+    flex-direction: column;         /* coluna lateral estreita: volta a 1 por linha */
+  }
+
+  .servico {
+    flex: none;
+  }
+}

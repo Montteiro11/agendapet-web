@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<!-- lang="pt-BR": avisa leitores de tela e o Google que a página é em português -->
+<html lang="pt-BR">
+<head>
+  <!-- charset: permite acentos (ç, ã, é) aparecerem corretamente -->
+  <meta charset="UTF-8">
+  <!-- viewport: faz o celular usar a largura real da tela (sem isso o responsivo não funciona) -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- title e description: o que aparece na aba e no resultado do Google (SEO) -->
+  <title>AgendaPet Web | Painel de Agendamentos da Patinhas &amp; Cia</title>
+  <meta name="description" content="Painel de agendamentos da Patinhas &amp; Cia: cadastre banho, tosa, consultas e hospedagem, acompanhe a agenda do dia e feche o caixa.">
+  <link rel="icon" href="img/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <!-- Skip link: primeiro item do Tab. Leva direto ao conteúdo, pulando o menu. -->
+  <a class="skip-link" href="#conteudo">Ir para o conteúdo</a>
+
+  <!-- header: topo da página (marca + navegação) -->
+  <header class="cabecalho">
+    <div class="cabecalho__marca">
+      <!-- alt="" porque a logo é decorativa: o nome já está escrito no h1 ao lado -->
+      <img class="cabecalho__logo" src="img/logo.svg" alt="" width="48" height="48">
+      <div>
+        <!-- Único h1 da página -->
+        <h1 class="cabecalho__titulo">AgendaPet Web</h1>
+        <p class="cabecalho__subtitulo">Patinhas &amp; Cia</p>
+      </div>
+    </div>
+
+    <!-- nav: links para as três áreas principais. aria-label diz ao leitor de tela o que é este menu -->
+    <nav class="menu" aria-label="Seções do painel">
+      <ul class="menu__lista">
+        <li><a class="menu__link" href="#novo-agendamento">Novo agendamento</a></li>
+        <li><a class="menu__link" href="#agenda-do-dia">Agenda do dia</a></li>
+        <li><a class="menu__link" href="#fechamento-do-dia">Fechamento do dia</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <!-- main: conteúdo principal. tabindex="-1" deixa o skip link mover o foco para cá -->
+  <main id="conteudo" class="conteudo" tabindex="-1">
+    <div class="conteudo__secoes">
+      <!-- section + h2: cada área é uma seção com título próprio (hierarquia h1 > h2 > h3, sem pular) -->
+      <section id="novo-agendamento" class="painel" aria-labelledby="titulo-novo">
+        <h2 id="titulo-novo" class="painel__titulo">Novo agendamento</h2>
+        <p class="painel__texto">Em construção (US03).</p>
+      </section>
+
+      <section id="agenda-do-dia" class="painel" aria-labelledby="titulo-agenda">
+        <h2 id="titulo-agenda" class="painel__titulo">Agenda do dia</h2>
+        <p class="painel__texto">Em construção (US06).</p>
+      </section>
+
+      <section id="fechamento-do-dia" class="painel" aria-labelledby="titulo-fechamento">
+        <h2 id="titulo-fechamento" class="painel__titulo">Fechamento do dia</h2>
+        <p class="painel__texto">Em construção (US07).</p>
+      </section>
+    </div>
+
+    <!-- aside: conteúdo de apoio (o catálogo de serviços) -->
+    <aside class="catalogo" aria-labelledby="titulo-catalogo">
+      <h2 id="titulo-catalogo" class="painel__titulo">Nossos serviços</h2>
+      <!-- role="status" + aria-live: o leitor de tela anuncia quando este texto muda -->
+      <p class="catalogo__status" data-catalogo-status role="status" aria-live="polite">Carregando serviços…</p>
+      <ul class="catalogo__lista" data-catalogo-lista></ul>
+    </aside>
+  </main>
+
+  <footer class="rodape">
+    <p>&copy; 2026 Patinhas &amp; Cia · AgendaPet Web · Projeto acadêmico</p>
+  </footer>
+
+</body>
+</html>

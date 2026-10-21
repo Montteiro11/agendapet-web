@@ -259,6 +259,128 @@ h3 {
   font-size: 0.875rem;
 }
 
+/* ---------- 8b. Formulário (US03) ---------- */
+.formulario {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-3);
+}
+
+.formulario__aviso {
+  margin: 0;
+  color: var(--cor-texto-suave);
+  font-size: 0.875rem;
+}
+
+/* Resumo dos erros: só aparece quando tem texto (:empty = elemento sem conteúdo) */
+.formulario__resumo {
+  margin: 0;
+  padding: var(--espaco-2) var(--espaco-3);
+  border-left: 4px solid var(--cor-erro);
+  border-radius: var(--raio);
+  background-color: #fbeaea;
+  color: var(--cor-erro);
+  font-weight: 600;
+}
+
+.formulario__resumo:empty,
+.formulario__sucesso:empty {
+  display: none;
+}
+
+.formulario__sucesso {
+  margin: 0;
+  padding: var(--espaco-2) var(--espaco-3);
+  border-left: 4px solid var(--cor-primaria);
+  border-radius: var(--raio);
+  background-color: #e3f1ef;
+  color: var(--cor-primaria-escura);
+  font-weight: 600;
+}
+
+/* No celular: um campo embaixo do outro */
+.formulario__campos {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-3);
+}
+
+.campo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-1);
+}
+
+.campo__rotulo {
+  font-weight: 600;
+}
+
+/* input, select e textarea usam a mesma classe */
+.campo__entrada {
+  min-height: var(--alvo-toque);
+  padding: var(--espaco-2) var(--espaco-3);
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio);
+  background-color: var(--cor-superficie);
+  color: var(--cor-texto);
+  font: inherit;
+}
+
+.campo__entrada:hover {
+  border-color: var(--cor-primaria);
+}
+
+.campo__entrada:disabled {
+  background-color: #efebe4;
+  color: var(--cor-texto-suave);
+  cursor: not-allowed;
+}
+
+/* Campo com erro: o JavaScript coloca aria-invalid="true".
+   Seletor de atributo = mesma especificidade de uma classe. */
+.campo__entrada[aria-invalid="true"] {
+  border: 2px solid var(--cor-erro);
+}
+
+.campo__ajuda {
+  margin: 0;
+  color: var(--cor-texto-suave);
+  font-size: 0.875rem;
+}
+
+.campo__erro {
+  margin: 0;
+  color: var(--cor-erro);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.campo__erro:empty {
+  display: none;
+}
+
+.formulario__acoes {
+  display: flex;
+  justify-content: flex-end;
+}
+
+/* ---------- 8c. Agenda simples (provisória até a US06) ---------- */
+.agenda-simples {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.agenda-simples__item {
+  padding: var(--espaco-2) var(--espaco-3);
+  border-left: 4px solid var(--cor-primaria);
+  border-radius: var(--raio);
+  background-color: var(--cor-fundo);
+}
+
 /* ---------- 9. Botões ---------- */
 .botao {
   min-height: var(--alvo-toque);
@@ -307,6 +429,20 @@ h3 {
 
   .servico {
     flex: 1 1 calc(50% - var(--espaco-3));
+  }
+
+  /* Formulário em 2 colunas */
+  .formulario__campos {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+
+  .campo {
+    flex: 1 1 calc(50% - var(--espaco-3));
+  }
+
+  .campo--inteiro {
+    flex-basis: 100%;
   }
 }
 

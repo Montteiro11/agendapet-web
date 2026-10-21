@@ -44,12 +44,98 @@
       <!-- section + h2: cada área é uma seção com título próprio (hierarquia h1 > h2 > h3, sem pular) -->
       <section id="novo-agendamento" class="painel" aria-labelledby="titulo-novo">
         <h2 id="titulo-novo" class="painel__titulo">Novo agendamento</h2>
-        <p class="painel__texto">Em construção (US03).</p>
+
+        <!-- novalidate: desliga os balões automáticos do navegador.
+             Quem valida e mostra as mensagens é o nosso JavaScript (regras.js + ui.js). -->
+        <form class="formulario" data-form-agendamento novalidate>
+          <p class="formulario__aviso">Campos com * são obrigatórios.</p>
+
+          <!-- Resumo dos erros. role="alert" faz o leitor de tela ler assim que o texto aparece. -->
+          <p class="formulario__resumo" data-form-resumo role="alert"></p>
+
+          <div class="formulario__campos">
+            <!-- Cada campo: label (for = id do input) + input + parágrafo de erro.
+                 aria-describedby liga o input à sua mensagem de erro. -->
+            <div class="campo">
+              <label class="campo__rotulo" for="tutor">Nome do tutor *</label>
+              <input class="campo__entrada" id="tutor" name="tutor" type="text"
+                     required maxlength="80" autocomplete="name" aria-describedby="erro-tutor">
+              <p class="campo__erro" id="erro-tutor"></p>
+            </div>
+
+            <div class="campo">
+              <label class="campo__rotulo" for="telefone">Telefone *</label>
+              <!-- type="tel" abre o teclado numérico no celular -->
+              <input class="campo__entrada" id="telefone" name="telefone" type="tel"
+                     required autocomplete="tel" placeholder="(48) 99999-9999" aria-describedby="erro-telefone">
+              <p class="campo__erro" id="erro-telefone"></p>
+            </div>
+
+            <div class="campo">
+              <label class="campo__rotulo" for="pet">Nome do pet *</label>
+              <input class="campo__entrada" id="pet" name="pet" type="text"
+                     required maxlength="60" autocomplete="off" aria-describedby="erro-pet">
+              <p class="campo__erro" id="erro-pet"></p>
+            </div>
+
+            <div class="campo">
+              <label class="campo__rotulo" for="especie">Espécie *</label>
+              <select class="campo__entrada" id="especie" name="especie" required aria-describedby="erro-especie">
+                <option value="">Selecione…</option>
+                <option value="Cão">Cão</option>
+                <option value="Gato">Gato</option>
+                <option value="Outro">Outro</option>
+              </select>
+              <p class="campo__erro" id="erro-especie"></p>
+            </div>
+
+            <div class="campo campo--inteiro">
+              <label class="campo__rotulo" for="servico">Serviço *</label>
+              <!-- As opções são criadas pelo JavaScript a partir do catálogo (US02) -->
+              <select class="campo__entrada" id="servico" name="servico" required disabled aria-describedby="erro-servico">
+                <option value="">Carregando serviços…</option>
+              </select>
+              <p class="campo__erro" id="erro-servico"></p>
+            </div>
+
+            <div class="campo">
+              <label class="campo__rotulo" for="data">Data *</label>
+              <!-- min é preenchido pelo JavaScript com a data de hoje -->
+              <input class="campo__entrada" id="data" name="data" type="date"
+                     required aria-describedby="erro-data">
+              <p class="campo__erro" id="erro-data"></p>
+            </div>
+
+            <div class="campo">
+              <label class="campo__rotulo" for="horario">Horário *</label>
+              <input class="campo__entrada" id="horario" name="horario" type="time"
+                     required min="08:00" max="17:30" aria-describedby="ajuda-horario erro-horario">
+              <p class="campo__ajuda" id="ajuda-horario">Atendemos das 08:00 às 18:00 (último início às 17:30).</p>
+              <p class="campo__erro" id="erro-horario"></p>
+            </div>
+
+            <div class="campo campo--inteiro">
+              <label class="campo__rotulo" for="observacoes">Observações</label>
+              <textarea class="campo__entrada" id="observacoes" name="observacoes"
+                        rows="3" maxlength="300" placeholder="Ex.: pet bravo, alergia a shampoo…"></textarea>
+            </div>
+          </div>
+
+          <div class="formulario__acoes">
+            <button class="botao" type="submit">Salvar agendamento</button>
+          </div>
+
+          <!-- Confirmação de sucesso. role="status" é anunciado sem interromper o leitor de tela. -->
+          <p class="formulario__sucesso" data-form-sucesso role="status"></p>
+        </form>
       </section>
 
       <section id="agenda-do-dia" class="painel" aria-labelledby="titulo-agenda">
         <h2 id="titulo-agenda" class="painel__titulo">Agenda do dia</h2>
-        <p class="painel__texto">Em construção (US06).</p>
+        <!-- Versão simples: só mostra o que foi salvo.
+             Busca, filtros, ordenação e botões chegam na US06. -->
+        <p class="painel__texto" data-agenda-vazia>Nenhum agendamento ainda.</p>
+        <ul class="agenda-simples" data-agenda-lista></ul>
       </section>
 
       <section id="fechamento-do-dia" class="painel" aria-labelledby="titulo-fechamento">

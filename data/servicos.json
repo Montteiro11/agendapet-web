@@ -1,0 +1,9 @@
+[
+  { "id": "banho", "nome": "Banho", "preco": 60, "duracaoMin": 60, "domiciliar": true },
+  { "id": "tosa", "nome": "Tosa", "preco": 80, "duracaoMin": 90, "domiciliar": true },
+  { "id": "banho-tosa", "nome": "Banho e tosa", "preco": 120, "duracaoMin": 120, "domiciliar": true },
+  { "id": "consulta", "nome": "Consulta veterinária", "preco": 150, "duracaoMin": 30, "domiciliar": true },
+  { "id": "vacina", "nome": "Vacina", "preco": 90, "duracaoMin": 15, "domiciliar": true },
+  { "id": "hospedagem", "nome": "Hospedagem (diária)", "preco": 110, "duracaoMin": 1440, "domiciliar": false },
+  { "id": "adestramento", "nome": "Adestramento (aula)", "preco": 100, "duracaoMin": 60, "domiciliar": true }
+]

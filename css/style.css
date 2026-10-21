@@ -364,6 +364,73 @@ h3 {
   justify-content: flex-end;
 }
 
+/* ---------- 8b2. Domicílio e endereço (US04) ---------- */
+.campo--marcacao {
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--espaco-2);
+}
+
+.campo--marcacao .campo__ajuda {
+  flex-basis: 100%;
+}
+
+/* Checkbox maior, fácil de tocar no celular */
+.campo__marcador {
+  width: 1.5rem;
+  height: 1.5rem;
+  margin: 0;
+  accent-color: var(--cor-primaria);
+}
+
+.campo__marcador:disabled + .campo__rotulo {
+  color: var(--cor-texto-suave);
+}
+
+.endereco {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-3);
+  margin: 0;
+  padding: var(--espaco-3);
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio);
+}
+
+/* Conflito de especificidade: ".endereco { display: flex }" vence o
+   estilo padrão do atributo hidden do navegador. Esta regra (classe +
+   atributo = 0,2,0) garante que o grupo some quando estiver hidden. */
+.endereco[hidden] {
+  display: none;
+}
+
+.endereco__titulo {
+  padding: 0 var(--espaco-2);
+  font-weight: 700;
+  color: var(--cor-primaria-escura);
+}
+
+.campo__status {
+  margin: 0;
+  color: var(--cor-texto-suave);
+  font-size: 0.875rem;
+}
+
+.campo__status:empty {
+  display: none;
+}
+
+.campo__status--erro {
+  color: var(--cor-erro);
+  font-weight: 600;
+}
+
+.campo__status--sucesso {
+  color: var(--cor-primaria-escura);
+  font-weight: 600;
+}
+
 /* ---------- 8c. Agenda simples (provisória até a US06) ---------- */
 .agenda-simples {
   display: flex;
@@ -443,6 +510,11 @@ h3 {
 
   .campo--inteiro {
     flex-basis: 100%;
+  }
+
+  .endereco {
+    flex-direction: row;
+    flex-wrap: wrap;
   }
 }
 

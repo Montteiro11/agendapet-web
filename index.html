@@ -98,6 +98,72 @@
               <p class="campo__erro" id="erro-servico"></p>
             </div>
 
+            <!-- US04: só fica habilitado se o serviço escolhido aceita atendimento domiciliar -->
+            <div class="campo campo--inteiro campo--marcacao">
+              <input class="campo__marcador" id="domiciliar" name="domiciliar" type="checkbox"
+                     disabled aria-describedby="ajuda-domiciliar">
+              <label class="campo__rotulo" for="domiciliar">Atendimento a domicílio</label>
+              <p class="campo__ajuda" id="ajuda-domiciliar">Disponível apenas para serviços que atendem a domicílio.</p>
+            </div>
+
+            <!-- fieldset agrupa os campos de endereço; legend é o título do grupo.
+                 hidden + disabled: escondido e fora do envio até marcar "domicílio". -->
+            <fieldset class="endereco campo--inteiro" data-endereco hidden disabled>
+              <legend class="endereco__titulo">Endereço do atendimento</legend>
+
+              <div class="campo">
+                <label class="campo__rotulo" for="cep">CEP *</label>
+                <!-- inputmode="numeric": teclado de números no celular, mas aceita o hífen -->
+                <input class="campo__entrada" id="cep" name="cep" type="text" inputmode="numeric"
+                       maxlength="9" placeholder="00000-000" autocomplete="postal-code"
+                       aria-describedby="status-cep erro-cep">
+                <!-- aria-live="polite": o leitor de tela anuncia "Buscando…", "CEP não encontrado" etc. -->
+                <p class="campo__status" id="status-cep" data-cep-status aria-live="polite"></p>
+                <p class="campo__erro" id="erro-cep"></p>
+              </div>
+
+              <div class="campo">
+                <label class="campo__rotulo" for="logradouro">Rua *</label>
+                <input class="campo__entrada" id="logradouro" name="logradouro" type="text"
+                       autocomplete="address-line1" aria-describedby="erro-logradouro">
+                <p class="campo__erro" id="erro-logradouro"></p>
+              </div>
+
+              <div class="campo">
+                <label class="campo__rotulo" for="numero">Número *</label>
+                <input class="campo__entrada" id="numero" name="numero" type="text"
+                       maxlength="10" aria-describedby="erro-numero">
+                <p class="campo__erro" id="erro-numero"></p>
+              </div>
+
+              <div class="campo">
+                <label class="campo__rotulo" for="complemento">Complemento</label>
+                <input class="campo__entrada" id="complemento" name="complemento" type="text"
+                       autocomplete="address-line2" maxlength="60">
+              </div>
+
+              <div class="campo">
+                <label class="campo__rotulo" for="bairro">Bairro *</label>
+                <input class="campo__entrada" id="bairro" name="bairro" type="text"
+                       aria-describedby="erro-bairro">
+                <p class="campo__erro" id="erro-bairro"></p>
+              </div>
+
+              <div class="campo">
+                <label class="campo__rotulo" for="cidade">Cidade *</label>
+                <input class="campo__entrada" id="cidade" name="cidade" type="text"
+                       autocomplete="address-level2" aria-describedby="erro-cidade">
+                <p class="campo__erro" id="erro-cidade"></p>
+              </div>
+
+              <div class="campo">
+                <label class="campo__rotulo" for="uf">UF *</label>
+                <input class="campo__entrada" id="uf" name="uf" type="text"
+                       maxlength="2" autocomplete="address-level1" placeholder="SC" aria-describedby="erro-uf">
+                <p class="campo__erro" id="erro-uf"></p>
+              </div>
+            </fieldset>
+
             <div class="campo">
               <label class="campo__rotulo" for="data">Data *</label>
               <!-- min é preenchido pelo JavaScript com a data de hoje -->

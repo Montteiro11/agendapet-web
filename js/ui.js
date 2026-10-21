@@ -210,6 +210,7 @@ export function limparSucesso() {
 export function limparFormulario() {
   formulario.reset();
   limparErros();
+  permitirDomiciliar(false); // sem serviço escolhido, domicílio volta a ficar bloqueado
 }
 
 // =========================================================
@@ -231,9 +232,77 @@ export function mostrarAgenda(agendamentos) {
     item.classList.add('agenda-simples__item');
     item.textContent =
       `${formatarData(agendamento.data)} às ${agendamento.horario} – ` +
-      `${agendamento.pet} (${agendamento.nomeServico}) · tutor: ${agendamento.tutor}`;
+      `${agendamento.pet} (${agendamento.nomeServico}) · tutor: ${agendamento.tutor}` +
+      (agendamento.domiciliar === 'on' ? ` · a domicílio (${agendamento.bairro})` : '');
     return item;
   });
 
   agendaLista.replaceChildren(...itens);
+}
+
+// =========================================================
+// Atendimento a domicílio e endereço por CEP (US04)
+// =========================================================
+
+const campoDomiciliar = formulario.querySelector('[name="domiciliar"]');
+const grupoEndereco = formulario.querySelector('[data-endereco]');
+const campoCep = formulario.querySelector('[name="cep"]');
+const statusCep = formulario.querySelector('[data-cep-status]');
+
+/** Liga/desliga o checkbox "Atendimento a domicílio" conforme o serviço. */
+export function permitirDomiciliar(permitido) {
+  campoDomiciliar.disabled = !permitido;
+  if (!permitido) {
+    campoDomiciliar.checked = false;
+    mostrarEndereco(false);
+  }
+}
+
+/** Domicílio está marcado? */
+export function domiciliarMarcado() {
+  return campoDomiciliar.checked;
+}
+
+/**
+ * Mostra ou esconde os campos de endereço.
+ * disabled = true tira os campos do envio (FormData ignora campos desabilitados).
+ */
+export function mostrarEndereco(visivel) {
+  grupoEndereco.hidden = !visivel;
+  grupoEndereco.disabled = !visivel;
+  if (!visivel) {
+    mostrarStatusCep('', 'neutro');
+  }
+}
+
+/**
+ * Coloca o hífen enquanto a pessoa digita: "01001000" -> "01001-000".
+ * Devolve só os números, para o app.js decidir se já pode buscar.
+ */
+export function formatarCampoCep() {
+  const digitos = campoCep.value.replace(/\D/g, '').slice(0, 8);
+  campoCep.value = digitos.length > 5 ? `${digitos.slice(0, 5)}-${digitos.slice(5)}` : digitos;
+  return digitos;
+}
+
+/**
+ * Mensagem embaixo do CEP. tipo: 'carregando' | 'sucesso' | 'erro' | 'neutro'.
+ * A classe muda a cor (ver style.css).
+ */
+export function mostrarStatusCep(texto, tipo) {
+  statusCep.textContent = texto;
+  statusCep.classList.remove('campo__status--erro', 'campo__status--sucesso');
+  if (tipo === 'erro') statusCep.classList.add('campo__status--erro');
+  if (tipo === 'sucesso') statusCep.classList.add('campo__status--sucesso');
+}
+
+/**
+ * Preenche rua, bairro, cidade e UF com o que veio do ViaCEP
+ * e leva o foco para o "Número" (que a pessoa precisa digitar).
+ */
+export function preencherEndereco(endereco) {
+  for (const campo of ['logradouro', 'bairro', 'cidade', 'uf']) {
+    formulario.querySelector(`[name="${campo}"]`).value = endereco[campo] ?? '';
+  }
+  formulario.querySelector('[name="numero"]').focus();
 }

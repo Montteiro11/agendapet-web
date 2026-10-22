@@ -148,3 +148,43 @@ export function validarEndereco(dados) {
 
   return erros;
 }
+
+// =========================================================
+// Regras da agenda (US07)
+// =========================================================
+
+/**
+ * CALLBACK: "criterio" é uma FUNÇÃO recebida como parâmetro.
+ * filtrarAgendamentos não sabe qual é o filtro: quem chama decide.
+ *
+ * Exemplos:
+ *   filtrarAgendamentos(lista, (a) => a.status === 'Concluído')
+ *   filtrarAgendamentos(lista, (a) => a.data === '2026-10-23')
+ */
+export function filtrarAgendamentos(lista, criterio) {
+  const resultado = [];
+  for (const agendamento of lista) {
+    if (criterio(agendamento)) {
+      resultado.push(agendamento);
+    }
+  }
+  return resultado;
+}
+
+/**
+ * Procura um agendamento ATIVO no mesmo dia e horário.
+ * Cancelado não conta: o horário dele fica livre de novo.
+ * find devolve o primeiro que combinar, ou undefined se não tiver nenhum.
+ */
+export function encontrarConflito(lista, data, horario) {
+  return lista.find((agendamento) =>
+    agendamento.estaAtivo() && agendamento.data === data && agendamento.horario === horario
+  );
+}
+
+/** Versão "sim ou não" da regra acima. some = "algum item satisfaz?" */
+export function haConflito(lista, data, horario) {
+  return lista.some((agendamento) =>
+    agendamento.estaAtivo() && agendamento.data === data && agendamento.horario === horario
+  );
+}

@@ -49,3 +49,6 @@ Entregar à Patinhas & Cia um painel web que cadastre, valide e acompanhe os age
 - Pontos planejados: 48
 - Pontos entregues:
 - O que ficou de fora e por quê:
+
+## Trabalho não planejado##
+- Trabalho não planejado: AJ01 – correção do nome da autora (1 pt).

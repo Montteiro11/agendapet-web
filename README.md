@@ -69,3 +69,6 @@ Kanban: https://trello.com/invite/b/6ad7b4650e20d991aeb3ed0c/ATTI16f8530ccd3f003
 ### Testes automáticos (bônus)
 - `npm test` roda `tests/dominio.test.js` com o executor de testes que já vem no Node (`node:test`), sem instalar nada.
 - São 10 testes cobrindo os cenários de aceite da US07: taxa do domiciliar, conflito de horário, protocolos sequenciais, faturamento só dos concluídos, contagem por serviço e cancelados.
+
+## Autoria
+- Desenvolvido por **Vanessa Monteiro Paim**.

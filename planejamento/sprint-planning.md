@@ -2,7 +2,7 @@
 
 **Sprint:** 16/10/2026 a 30/10/2026 (2 semanas)
 **Entrega no AVA:** até 02/11/2026, 22h
-**Responsável:** Murilo
+**Responsável:** Vanessa M. Paim
 
 ## Meta da sprint
 Entregar à Patinhas & Cia um painel web que cadastre, valide e acompanhe os agendamentos do dia, com fechamento do caixa no navegador e no terminal.

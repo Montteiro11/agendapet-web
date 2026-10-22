@@ -44,3 +44,28 @@ Kanban: https://trello.com/invite/b/6ad7b4650e20d991aeb3ed0c/ATTI16f8530ccd3f003
 - Se a data for feriado, aparece o nome do feriado e o agendamento só é salvo depois de marcar **"Agendar mesmo assim"**.
 - Se a BrasilAPI falhar, aparece o aviso "Não foi possível verificar feriados agora" e o agendamento pode continuar normalmente.
 - Todo acesso ao `localStorage` passa por `js/storage.js`, com `try/catch`: um valor corrompido não quebra a página.
+
+ ### Regras de negócio e fechamento do dia (US07)
+- **Classes** (`js/dominio/agendamento.js`): `Agendamento` guarda os dados e tem os métodos `calcularValor()`, `resumo()`, `concluir()`, `cancelar()` e `estaAtivo()`. A subclasse `AgendamentoDomiciliar extends Agendamento` acrescenta o `endereco` e sobrescreve `calcularValor()`, `resumo()` e `toJSON()`.
+- **Taxa de deslocamento:** valor fixo de **R$ 20,00** somado ao preço do serviço nos atendimentos a domicílio.
+- **Conflito:** não é possível salvar dois agendamentos **ativos** (Agendado ou Concluído) no mesmo dia e horário. Um agendamento cancelado libera o horário.
+- **Protocolo:** sequencial no formato `AP-0001`, gerado por uma **closure** (`criarGeradorDeProtocolo`), que guarda o contador sem variável global. Um protocolo só é gerado quando o agendamento é salvo de fato.
+- **Callback:** `filtrarAgendamentos(lista, criterio)` recebe a função que decide quem entra no resultado.
+- **Fechamento do dia** (`js/dominio/fechamento.js`):
+  - *Atendimentos*: agendamentos do dia que não foram cancelados.
+  - *Faturamento*: soma do valor apenas dos **concluídos**.
+  - *Previsto*: soma do valor dos que ainda estão como Agendado.
+  - *Cancelados* e *quantidade por serviço*.
+  - *Próximo atendimento*: o Agendado de horário mais cedo (se o dia for hoje, só os que ainda não passaram).
+  - Usa os métodos de array `filter`, `reduce`, `sort`, `find`, `some`, `every` e `map`, e os laços `for` e `for...of`.
+
+### const, let e var
+| Palavra | Pode receber outro valor? | Escopo | Uso no projeto |
+|---|---|---|---|
+| `const` | Não | Bloco `{ }` | Padrão para tudo que não muda: funções, elementos do DOM, o array `agendamentos` (o conteúdo muda com `push`, mas a variável aponta sempre para o mesmo array). |
+| `let` | Sim | Bloco `{ }` | Valores que mudam: `servicos`, o `contador` do protocolo, `feriadoDaData`, o `i` do laço `for`. |
+| `var` | Sim | Função inteira (ignora o bloco) | **Não usamos.** O `var` "vaza" para fora de `if` e `for`, pode ser usado antes de ser declarado (hoisting, vale `undefined`) e pode ser declarado duas vezes sem erro. Isso causa bugs difíceis de achar; `const` e `let` evitam esses problemas. |
+
+### Testes automáticos (bônus)
+- `npm test` roda `tests/dominio.test.js` com o executor de testes que já vem no Node (`node:test`), sem instalar nada.
+- São 10 testes cobrindo os cenários de aceite da US07: taxa do domiciliar, conflito de horário, protocolos sequenciais, faturamento só dos concluídos, contagem por serviço e cancelados.

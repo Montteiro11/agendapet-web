@@ -474,6 +474,71 @@ h3 {
   background-color: var(--cor-fundo);
 }
 
+/* ---------- 8d. Fechamento do dia (US07) ---------- */
+.fechamento__dia {
+  margin-bottom: var(--espaco-3);
+}
+
+/* Celular: 2 indicadores por linha */
+.fechamento {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espaco-2);
+  margin: 0 0 var(--espaco-3);
+}
+
+.fechamento__item {
+  display: flex;
+  flex: 1 1 calc(50% - var(--espaco-2));
+  flex-direction: column;
+  gap: var(--espaco-1);
+  padding: var(--espaco-3);
+  border-radius: var(--raio);
+  background-color: var(--cor-fundo);
+}
+
+.fechamento__item--destaque {
+  background-color: #e3f1ef;
+}
+
+.fechamento__rotulo {
+  color: var(--cor-texto-suave);
+  font-size: 0.875rem;
+}
+
+.fechamento__valor {
+  margin: 0;
+  color: var(--cor-primaria-escura);
+  font-size: 1.35rem;
+  font-weight: 700;
+}
+
+.fechamento__proximo {
+  margin: 0 0 var(--espaco-3);
+  font-weight: 600;
+}
+
+.fechamento__subtitulo {
+  margin: 0 0 var(--espaco-2);
+  font-size: 1rem;
+}
+
+.fechamento__servicos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espaco-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.fechamento__servico {
+  padding: var(--espaco-1) var(--espaco-3);
+  border-radius: 999px;
+  background-color: var(--cor-destaque-claro);
+  color: #5c3800;
+}
+
 /* ---------- 9. Botões ---------- */
 .botao {
   min-height: var(--alvo-toque);
@@ -541,6 +606,11 @@ h3 {
   .endereco {
     flex-direction: row;
     flex-wrap: wrap;
+  }
+
+  /* Tablet em diante: 4 indicadores lado a lado */
+  .fechamento__item {
+    flex-basis: calc(25% - var(--espaco-2));
   }
 }
 

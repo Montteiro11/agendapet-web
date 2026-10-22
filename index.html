@@ -216,7 +216,38 @@
 
       <section id="fechamento-do-dia" class="painel" aria-labelledby="titulo-fechamento">
         <h2 id="titulo-fechamento" class="painel__titulo">Fechamento do dia</h2>
-        <p class="painel__texto">Em construção (US07).</p>
+
+        <div class="campo fechamento__dia">
+          <label class="campo__rotulo" for="dia-fechamento">Dia do fechamento</label>
+          <input class="campo__entrada" id="dia-fechamento" type="date" data-fechamento-dia>
+        </div>
+
+        <!-- dl = lista de definições: dt é o nome do indicador, dd é o valor.
+             aria-live: o leitor de tela anuncia quando os números mudam. -->
+        <dl class="fechamento" aria-live="polite">
+          <div class="fechamento__item">
+            <dt class="fechamento__rotulo">Atendimentos</dt>
+            <dd class="fechamento__valor" data-fechamento-total>0</dd>
+          </div>
+          <div class="fechamento__item fechamento__item--destaque">
+            <dt class="fechamento__rotulo">Faturamento (concluídos)</dt>
+            <dd class="fechamento__valor" data-fechamento-faturamento>R$ 0,00</dd>
+          </div>
+          <div class="fechamento__item">
+            <dt class="fechamento__rotulo">Previsto (ainda agendados)</dt>
+            <dd class="fechamento__valor" data-fechamento-previsto>R$ 0,00</dd>
+          </div>
+          <div class="fechamento__item">
+            <dt class="fechamento__rotulo">Cancelados</dt>
+            <dd class="fechamento__valor" data-fechamento-cancelados>0</dd>
+          </div>
+        </dl>
+
+        <p class="fechamento__proximo" data-fechamento-proximo></p>
+
+        <h3 class="fechamento__subtitulo">Por serviço</h3>
+        <p class="painel__texto" data-fechamento-servicos-vazio>Nenhum atendimento neste dia.</p>
+        <ul class="fechamento__servicos" data-fechamento-servicos></ul>
       </section>
     </div>
 

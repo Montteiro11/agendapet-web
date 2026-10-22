@@ -232,10 +232,11 @@ export function mostrarAgenda(agendamentos) {
   const itens = agendamentos.map((agendamento) => {
     const item = document.createElement('li');
     item.classList.add('agenda-simples__item');
+    // resumo() e calcularValor() são métodos da classe (US07).
+    // Se for AgendamentoDomiciliar, o resumo já inclui o endereço e o valor, a taxa.
     item.textContent =
-      `${formatarData(agendamento.data)} às ${agendamento.horario} – ` +
-      `${agendamento.pet} (${agendamento.nomeServico}) · tutor: ${agendamento.tutor}` +
-      (agendamento.domiciliar === 'on' ? ` · a domicílio (${agendamento.bairro})` : '');
+      `${agendamento.protocolo} · ${formatarData(agendamento.data)} às ${agendamento.horario} – ` +
+      `${agendamento.resumo()} · ${formatarMoeda(agendamento.calcularValor())}`;
     return item;
   });
 
@@ -333,4 +334,55 @@ export function pedirConfirmacaoFeriado(mostrar) {
   confirmacaoFeriado.hidden = !mostrar;
   campoConfirmaFeriado.disabled = !mostrar;
   campoConfirmaFeriado.checked = false;
+}
+
+// =========================================================
+// Fechamento do dia (US07)
+// =========================================================
+
+const campoDiaFechamento = document.querySelector('[data-fechamento-dia]');
+const fechamentoTotal = document.querySelector('[data-fechamento-total]');
+const fechamentoFaturamento = document.querySelector('[data-fechamento-faturamento]');
+const fechamentoPrevisto = document.querySelector('[data-fechamento-previsto]');
+const fechamentoCancelados = document.querySelector('[data-fechamento-cancelados]');
+const fechamentoProximo = document.querySelector('[data-fechamento-proximo]');
+const fechamentoServicos = document.querySelector('[data-fechamento-servicos]');
+const fechamentoServicosVazio = document.querySelector('[data-fechamento-servicos-vazio]');
+
+/** Campo de data do fechamento (o app.js escuta a troca de dia). */
+export function obterCampoDiaFechamento() {
+  return campoDiaFechamento;
+}
+
+export function definirDiaFechamento(textoISO) {
+  campoDiaFechamento.value = textoISO;
+}
+
+/**
+ * Mostra o resultado de calcularFechamento() na tela.
+ * @param {object} resumo – { totalAtendimentos, faturamento, previsto, cancelados, porServico, proximo, diaEncerrado }
+ */
+export function mostrarFechamento(resumo) {
+  fechamentoTotal.textContent = resumo.totalAtendimentos;
+  fechamentoFaturamento.textContent = formatarMoeda(resumo.faturamento);
+  fechamentoPrevisto.textContent = formatarMoeda(resumo.previsto);
+  fechamentoCancelados.textContent = resumo.cancelados;
+
+  // Operador ternário encadeado: escolhe uma das três frases
+  fechamentoProximo.textContent = resumo.proximo
+    ? `Próximo atendimento: ${resumo.proximo.horario} – ${resumo.proximo.pet} (${resumo.proximo.nomeServico}), ${resumo.proximo.protocolo}.`
+    : resumo.diaEncerrado
+      ? 'Todos os atendimentos deste dia já foram finalizados.'
+      : 'Nenhum próximo atendimento neste dia.';
+
+  // Object.entries transforma { Banho: 2, Tosa: 1 } em [['Banho', 2], ['Tosa', 1]]
+  const itens = Object.entries(resumo.porServico).map(([nome, quantidade]) => {
+    const item = document.createElement('li');
+    item.classList.add('fechamento__servico');
+    item.textContent = `${nome}: ${quantidade}`;
+    return item;
+  });
+
+  fechamentoServicos.replaceChildren(...itens);
+  fechamentoServicosVazio.hidden = itens.length > 0;
 }

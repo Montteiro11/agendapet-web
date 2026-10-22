@@ -5,7 +5,9 @@
 // =========================================================
 
 import { buscarServicos, buscarEndereco, buscarFeriados } from './api.js';
-import { validarAgendamento, dataParaISO } from './dominio/regras.js';
+import { validarAgendamento, dataParaISO, encontrarConflito } from './dominio/regras.js';
+import { criarAgendamento, criarGeradorDeProtocolo } from './dominio/agendamento.js';
+import { calcularFechamento } from './dominio/fechamento.js';
 import {
   mostrarCatalogoCarregando,
   mostrarCatalogoErro,
@@ -28,16 +30,22 @@ import {
   preencherEndereco,
   mostrarStatusFeriado,
   pedirConfirmacaoFeriado,
+  obterCampoDiaFechamento,
+  definirDiaFechamento,
+  mostrarFechamento,
 } from './ui.js';
 
 // Lista de serviços vinda do catálogo (US02).
 // Usada também no <select> do formulário (US03).
 let servicos = [];
 
-// Agendamentos salvos nesta sessão.
+// Agendamentos salvos nesta sessão (instâncias de Agendamento/AgendamentoDomiciliar).
 // const: a variável sempre aponta para o MESMO array,
 // mas o conteúdo do array pode mudar (push).
 const agendamentos = [];
+
+// Gerador de protocolos AP-0001, AP-0002... (closure, ver dominio/agendamento.js)
+const gerarProtocolo = criarGeradorDeProtocolo();
 
 // ---------------------------------------------------------
 // Catálogo (US02)
@@ -87,25 +95,57 @@ async function aoEnviarFormulario(evento) {
     return;
   }
 
-  // find: procura o serviço escolhido para guardar o nome junto
+  // US07: não permite dois agendamentos ativos no mesmo dia e horário
+  const conflito = encontrarConflito(agendamentos, dados.data, dados.horario);
+  if (conflito) {
+    mostrarErros({
+      horario: `Horário ocupado: ${conflito.protocolo} (${conflito.pet}) já está marcado para ${formatarData(dados.data)} às ${dados.horario}.`,
+    });
+    return;
+  }
+
+  // find: procura o serviço escolhido para guardar nome e preço junto
   const servico = servicos.find((item) => item.id === dados.servico);
 
-  // Spread (...dados) copia todos os campos e acrescenta os novos.
-  // O status inicial é sempre "Agendado" (Concluído/Cancelado vêm na US06).
-  const agendamento = {
-    ...dados,
+  // Monta os dados no formato das classes do domínio (US07)
+  const dadosAgendamento = {
+    protocolo: gerarProtocolo(),
+    tutor: dados.tutor,
+    telefone: dados.telefone,
+    pet: dados.pet,
+    especie: dados.especie,
+    servicoId: dados.servico,
     nomeServico: servico ? servico.nome : dados.servico,
-    feriado: feriadoDaData, // nome do feriado ou null
-    status: 'Agendado',
+    preco: servico ? servico.preco : 0,
+    data: dados.data,
+    horario: dados.horario,
+    observacoes: dados.observacoes ?? '',
   };
+
+  // Só no atendimento a domicílio: acrescenta o endereço
+  if (dados.domiciliar === 'on') {
+    dadosAgendamento.endereco = {
+      cep: dados.cep,
+      logradouro: dados.logradouro,
+      numero: dados.numero,
+      complemento: dados.complemento ?? '',
+      bairro: dados.bairro,
+      cidade: dados.cidade,
+      uf: dados.uf.toUpperCase(),
+    };
+  }
+
+  // A fábrica escolhe a classe: Agendamento ou AgendamentoDomiciliar
+  const agendamento = criarAgendamento(dadosAgendamento);
 
   agendamentos.push(agendamento);
   mostrarAgenda(agendamentos);
+  atualizarFechamento();
 
   limparFormulario();
   feriadoDaData = null;
   mostrarSucesso(
-    `Agendamento salvo: ${agendamento.pet} em ${formatarData(agendamento.data)} às ${agendamento.horario}.`
+    `Agendamento ${agendamento.protocolo} salvo: ${agendamento.pet} em ${formatarData(agendamento.data)} às ${agendamento.horario}.`
   );
 }
 
@@ -225,9 +265,24 @@ campoData.addEventListener('change', () => {
 });
 
 // ---------------------------------------------------------
+// Fechamento do dia (US07)
+// ---------------------------------------------------------
+
+const campoDiaFechamento = obterCampoDiaFechamento();
+
+function atualizarFechamento() {
+  const dia = campoDiaFechamento.value || dataParaISO(new Date());
+  mostrarFechamento(calcularFechamento(agendamentos, dia));
+}
+
+campoDiaFechamento.addEventListener('change', atualizarFechamento);
+
+// ---------------------------------------------------------
 // Início
 // ---------------------------------------------------------
 
 definirDataMinima(dataParaISO(new Date()));
+definirDiaFechamento(dataParaISO(new Date()));
 mostrarAgenda(agendamentos);
+atualizarFechamento();
 carregarCatalogo();

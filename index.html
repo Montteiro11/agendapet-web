@@ -208,10 +208,52 @@
 
       <section id="agenda-do-dia" class="painel" aria-labelledby="titulo-agenda">
         <h2 id="titulo-agenda" class="painel__titulo">Agenda do dia</h2>
-        <!-- Versão simples: só mostra o que foi salvo.
-             Busca, filtros, ordenação e botões chegam na US06. -->
+
+        <!-- kbd = tecla do teclado. Mostra os atalhos para a atendente. -->
+        <p class="agenda__atalhos">
+          Atalhos: <kbd>N</kbd> novo agendamento · <kbd>/</kbd> buscar · <kbd>Esc</kbd> limpar a busca
+        </p>
+
+        <div class="agenda__filtros">
+          <div class="campo">
+            <label class="campo__rotulo" for="busca">Buscar por tutor ou pet</label>
+            <!-- type="search": campo de busca (no celular, o teclado mostra "Buscar") -->
+            <input class="campo__entrada" id="busca" type="search" placeholder="Ex.: Rex ou Ana"
+                   autocomplete="off" data-agenda-busca>
+          </div>
+
+          <div class="campo">
+            <label class="campo__rotulo" for="filtro-status">Status</label>
+            <select class="campo__entrada" id="filtro-status" data-agenda-filtro>
+              <option value="Todos">Todos</option>
+              <option value="Agendado">Agendado</option>
+              <option value="Concluído">Concluído</option>
+              <option value="Cancelado">Cancelado</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- role="status": o leitor de tela anuncia quando o número muda -->
+        <p class="agenda__contador" data-agenda-contador role="status">0 agendamentos</p>
         <p class="painel__texto" data-agenda-vazia>Nenhum agendamento ainda.</p>
-        <ul class="agenda-simples" data-agenda-lista></ul>
+
+        <!-- Os itens são criados pelo JavaScript (createElement + textContent) -->
+        <ul class="agenda" data-agenda-lista></ul>
+
+        <div class="agenda__exportar">
+          <button class="botao botao--secundario" type="button" data-exportar>Exportar agenda</button>
+
+          <div class="exportacao" data-exportacao hidden>
+            <label class="campo__rotulo" for="json-exportado">Agenda em JSON (copie ou baixe)</label>
+            <textarea class="campo__entrada exportacao__texto" id="json-exportado" rows="10"
+                      readonly data-exportacao-texto></textarea>
+            <div class="exportacao__acoes">
+              <button class="botao" type="button" data-copiar>Copiar</button>
+              <button class="botao botao--secundario" type="button" data-baixar>Baixar arquivo .json</button>
+            </div>
+            <p class="campo__status" data-exportacao-status role="status"></p>
+          </div>
+        </div>
       </section>
 
       <section id="fechamento-do-dia" class="painel" aria-labelledby="titulo-fechamento">

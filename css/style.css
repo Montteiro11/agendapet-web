@@ -457,8 +457,38 @@ h3 {
   flex-basis: 100%;
 }
 
-/* ---------- 8c. Agenda simples (provisória até a US06) ---------- */
-.agenda-simples {
+/* ---------- 8c. Agenda do dia (US06) ---------- */
+.agenda__atalhos {
+  margin: 0 0 var(--espaco-3);
+  color: var(--cor-texto-suave);
+  font-size: 0.875rem;
+}
+
+kbd {
+  padding: 0 var(--espaco-1);
+  border: 1px solid var(--cor-borda);
+  border-bottom-width: 2px;
+  border-radius: 4px;
+  background-color: var(--cor-superficie);
+  font-family: inherit;
+  font-weight: 700;
+}
+
+/* Celular: busca e filtro um embaixo do outro */
+.agenda__filtros {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-3);
+  margin-bottom: var(--espaco-3);
+}
+
+.agenda__contador {
+  margin: 0 0 var(--espaco-2);
+  font-weight: 700;
+  color: var(--cor-primaria-escura);
+}
+
+.agenda {
   display: flex;
   flex-direction: column;
   gap: var(--espaco-2);
@@ -467,11 +497,129 @@ h3 {
   list-style: none;
 }
 
-.agenda-simples__item {
-  padding: var(--espaco-2) var(--espaco-3);
-  border-left: 4px solid var(--cor-primaria);
+.agenda__item {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--espaco-1) var(--espaco-3);
+  padding: var(--espaco-3);
+  border: 1px solid var(--cor-borda);
+  border-left: 6px solid var(--cor-primaria);
   border-radius: var(--raio);
-  background-color: var(--cor-fundo);
+  background-color: var(--cor-superficie);
+  cursor: pointer;
+  transition: background-color 0.15s, border-color 0.15s;
+}
+
+/* A cor da borda esquerda indica o status */
+.agenda__item--concluido {
+  border-left-color: #2e7d32;
+}
+
+.agenda__item--cancelado {
+  border-left-color: var(--cor-erro);
+  background-color: #f6f3ee;
+}
+
+.agenda__item--cancelado .agenda__resumo {
+  text-decoration: line-through;
+  color: var(--cor-texto-suave);
+}
+
+/* Destaque ao passar o mouse (classe colocada pelo JS no mouseover) */
+.agenda__item--destaque {
+  background-color: #eef6f5;
+}
+
+/* Item selecionado (clique, Enter ou Espaço) */
+.agenda__item--selecionado {
+  border-color: var(--cor-primaria);
+  box-shadow: 0 0 0 2px var(--cor-primaria);
+}
+
+.agenda__quando {
+  flex-basis: 100%;
+  margin: 0;
+  font-weight: 700;
+  color: var(--cor-primaria-escura);
+}
+
+.agenda__resumo {
+  flex: 1 1 100%;
+  margin: 0;
+}
+
+.agenda__valor {
+  margin: 0;
+  font-weight: 700;
+}
+
+.status {
+  padding: 0.125rem var(--espaco-2);
+  border-radius: 999px;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.status--agendado {
+  background-color: #e3f1ef;
+  color: var(--cor-primaria-escura);
+}
+
+.status--concluido {
+  background-color: #e3f2e4;
+  color: #1b5e20;
+}
+
+.status--cancelado {
+  background-color: #fbeaea;
+  color: var(--cor-erro);
+}
+
+.agenda__detalhes {
+  flex-basis: 100%;
+  margin: 0;
+  padding-top: var(--espaco-2);
+  border-top: 1px dashed var(--cor-borda);
+  color: var(--cor-texto-suave);
+  font-size: 0.9rem;
+}
+
+.agenda__acoes {
+  display: flex;
+  flex-basis: 100%;
+  gap: var(--espaco-2);
+}
+
+.agenda__exportar {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--espaco-3);
+  margin-top: var(--espaco-4);
+}
+
+.exportacao {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-2);
+  width: 100%;
+}
+
+/* Mesmo conflito do .endereco: display: flex venceria o hidden */
+.exportacao[hidden] {
+  display: none;
+}
+
+.exportacao__texto {
+  font-family: Consolas, "Courier New", monospace;
+  font-size: 0.85rem;
+}
+
+.exportacao__acoes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espaco-2);
 }
 
 /* ---------- 8d. Fechamento do dia (US07) ---------- */
@@ -556,6 +704,26 @@ h3 {
   background-color: var(--cor-primaria-escura);
 }
 
+/* Botão "contornado": ação secundária */
+.botao--secundario {
+  border: 2px solid var(--cor-primaria);
+  background-color: var(--cor-superficie);
+  color: var(--cor-primaria-escura);
+}
+
+.botao--secundario:hover {
+  background-color: #e3f1ef;
+}
+
+/* Botão de ação destrutiva (Cancelar) */
+.botao--perigo {
+  background-color: var(--cor-erro);
+}
+
+.botao--perigo:hover {
+  background-color: #8c1d18;
+}
+
 /* ---------- 10. Rodapé ---------- */
 .rodape {
   padding: var(--espaco-3);
@@ -606,6 +774,15 @@ h3 {
   .endereco {
     flex-direction: row;
     flex-wrap: wrap;
+  }
+
+  /* Busca e filtro lado a lado */
+  .agenda__filtros {
+    flex-direction: row;
+  }
+
+  .agenda__filtros .campo {
+    flex: 1;
   }
 
   /* Tablet em diante: 4 indicadores lado a lado */

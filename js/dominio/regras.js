@@ -188,3 +188,46 @@ export function haConflito(lista, data, horario) {
     agendamento.estaAtivo() && agendamento.data === data && agendamento.horario === horario
   );
 }
+
+// =========================================================
+// Busca, filtro e ordem da agenda (US06)
+// =========================================================
+
+/**
+ * Deixa o texto "comparável": minúsculo e sem acento.
+ * "Pantufa", "PANTUFA" e "pântufa" viram todos "pantufa".
+ * normalize('NFD') separa a letra do acento; o replace apaga os acentos.
+ */
+export function normalizarTexto(texto) {
+  return String(texto ?? '')
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '')
+    .toLowerCase()
+    .trim();
+}
+
+/** Ordena por data e, no mesmo dia, por horário (sem mudar a lista original). */
+export function ordenarAgenda(lista) {
+  return [...lista].sort((a, b) => `${a.data} ${a.horario}`.localeCompare(`${b.data} ${b.horario}`));
+}
+
+/**
+ * Aplica o filtro de status e a busca por tutor ou pet, e devolve em ordem.
+ * Reaproveita o filtrarAgendamentos (callback): o critério é uma arrow function.
+ *
+ * @param {Agendamento[]} lista
+ * @param {{ status: string, busca: string }} filtros – status 'Todos' = não filtra
+ */
+export function filtrarAgenda(lista, { status = 'Todos', busca = '' } = {}) {
+  const termo = normalizarTexto(busca);
+
+  const resultado = filtrarAgendamentos(lista, (agendamento) => {
+    const statusOk = status === 'Todos' || agendamento.status === status;
+    const buscaOk = termo === ''
+      || normalizarTexto(agendamento.tutor).includes(termo)
+      || normalizarTexto(agendamento.pet).includes(termo);
+    return statusOk && buscaOk;
+  });
+
+  return ordenarAgenda(resultado);
+}

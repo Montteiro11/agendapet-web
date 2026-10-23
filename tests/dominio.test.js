@@ -17,7 +17,7 @@ import {
   TAXA_DESLOCAMENTO,
   STATUS,
 } from '../js/dominio/agendamento.js';
-import { haConflito, encontrarConflito, filtrarAgendamentos } from '../js/dominio/regras.js';
+import { haConflito, encontrarConflito, filtrarAgendamentos, filtrarAgenda } from '../js/dominio/regras.js';
 import { calcularFechamento } from '../js/dominio/fechamento.js';
 
 // Dados base reaproveitados nos testes
@@ -131,4 +131,27 @@ test('fábrica: criarAgendamento escolhe a classe pelo tipo (dados vindos de JSO
 
   assert.ok(copia instanceof AgendamentoDomiciliar);
   assert.equal(copia.calcularValor(), visita.calcularValor());
+});
+
+test('agenda (US06): fica ordenada por data e horário', () => {
+  const lista = [
+    new Agendamento({ ...base, protocolo: 'AP-0001', horario: '11:00' }),
+    new Agendamento({ ...base, protocolo: 'AP-0002', horario: '09:00' }),
+    new Agendamento({ ...base, protocolo: 'AP-0003', data: '2026-10-22', horario: '15:00' }),
+  ];
+  const ordem = filtrarAgenda(lista).map((agendamento) => agendamento.protocolo);
+  assert.deepEqual(ordem, ['AP-0003', 'AP-0002', 'AP-0001']);
+});
+
+test('agenda (US06): busca por tutor ou pet, sem diferenciar maiúscula e acento, e filtra por status', () => {
+  const lista = [
+    new Agendamento({ ...base, protocolo: 'AP-0001', pet: 'Pântufa', tutor: 'Ana' }),
+    new Agendamento({ ...base, protocolo: 'AP-0002', pet: 'Rex', tutor: 'Bruno', horario: '11:00' }),
+  ];
+  lista[1].cancelar();
+
+  assert.equal(filtrarAgenda(lista, { busca: 'PANTUFA' }).length, 1);
+  assert.equal(filtrarAgenda(lista, { busca: 'brun' })[0].protocolo, 'AP-0002');
+  assert.equal(filtrarAgenda(lista, { status: 'Cancelado' }).length, 1);
+  assert.equal(filtrarAgenda(lista, { status: 'Agendado', busca: 'rex' }).length, 0);
 });

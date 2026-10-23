@@ -68,7 +68,18 @@ Kanban: https://trello.com/invite/b/6ad7b4650e20d991aeb3ed0c/ATTI16f8530ccd3f003
 
 ### Testes automáticos (bônus)
 - `npm test` roda `tests/dominio.test.js` com o executor de testes que já vem no Node (`node:test`), sem instalar nada.
-- São 10 testes cobrindo os cenários de aceite da US07: taxa do domiciliar, conflito de horário, protocolos sequenciais, faturamento só dos concluídos, contagem por serviço e cancelados.
+- São 12 testes cobrindo os cenários de aceite da US07 e da US06: taxa do domiciliar, conflito de horário, protocolos sequenciais, faturamento só dos concluidos, contagem por serviço e cancelados, ordem da agenda, busca e filtro.
+
+### Agenda do dia (US06)
+- A lista é montada por JavaScript (`createElement`, `textContent` e `classList`), **ordenada por data e horário**, com o status Agendado, Concluído ou Cancelado.
+- **Mouse:** botões **Concluir** e **Cancelar** (só para quem está Agendado), destaque ao passar o mouse (`mouseover`/`mouseout`) e seleção do item com clique, que mostra telefone, espécie e observações.
+- **Teclado:** todos os itens e botões são alcançáveis com **Tab**; **Enter** ou **Espaço** selecionam o item.
+- **Busca em tempo real** por tutor ou pet (evento `input`), sem diferenciar maiúsculas de minúsculas nem acentos.
+- **Filtro por status** e contador "X agendamentos", com mensagem própria para lista vazia e para busca sem resultado.
+- **Atalhos:** `N` vai ao formulário, `/` foca a busca e `Esc` limpa a busca. Os atalhos `N` e `/` não funcionam enquanto se digita em um campo, para não atrapalhar.
+- **Exportar agenda:** mostra o JSON formatado para copiar, no mesmo formato que será lido pelos scripts de Node (US11). Bônus: botão para baixar como arquivo `.json`.
+- A busca, o filtro e a ordenação ficam em `js/dominio/regras.js` (`filtrarAgenda`), sem DOM, e têm testes em `npm test`.
 
 ## Autoria
 - Desenvolvido por **Vanessa Monteiro Paim**.
+

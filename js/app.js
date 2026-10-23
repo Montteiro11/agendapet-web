@@ -5,7 +5,7 @@
 // =========================================================
 
 import { buscarServicos, buscarEndereco, buscarFeriados } from './api.js';
-import { validarAgendamento, dataParaISO, encontrarConflito } from './dominio/regras.js';
+import { validarAgendamento, dataParaISO, encontrarConflito, filtrarAgenda } from './dominio/regras.js';
 import { criarAgendamento, criarGeradorDeProtocolo } from './dominio/agendamento.js';
 import { calcularFechamento } from './dominio/fechamento.js';
 import {
@@ -33,6 +33,15 @@ import {
   obterCampoDiaFechamento,
   definirDiaFechamento,
   mostrarFechamento,
+  obterControlesAgenda,
+  destacarItem,
+  focarItem,
+  focarBusca,
+  limparBusca,
+  focarFormulario,
+  mostrarExportacao,
+  copiarExportacao,
+  baixarExportacao,
 } from './ui.js';
 
 // Lista de serviços vinda do catálogo (US02).
@@ -139,7 +148,7 @@ async function aoEnviarFormulario(evento) {
   const agendamento = criarAgendamento(dadosAgendamento);
 
   agendamentos.push(agendamento);
-  mostrarAgenda(agendamentos);
+  atualizarAgenda();
   atualizarFechamento();
 
   limparFormulario();
@@ -265,6 +274,145 @@ campoData.addEventListener('change', () => {
 });
 
 // ---------------------------------------------------------
+// Agenda do dia (US06)
+// ---------------------------------------------------------
+
+const controles = obterControlesAgenda();
+
+// Estado da agenda: o que está filtrado e qual item está selecionado
+const estadoAgenda = {
+  busca: '',
+  status: 'Todos',
+  selecionado: null, // protocolo do item selecionado, ex.: "AP-0002"
+};
+
+/** Filtra, ordena (dominio/regras.js) e desenha (ui.js). */
+function atualizarAgenda() {
+  const visiveis = filtrarAgenda(agendamentos, estadoAgenda);
+  mostrarAgenda(visiveis, { total: agendamentos.length, selecionado: estadoAgenda.selecionado });
+}
+
+/** Clicou (ou apertou Enter/Espaço) num item: seleciona; de novo, tira a seleção. */
+function alternarSelecao(protocolo) {
+  estadoAgenda.selecionado = estadoAgenda.selecionado === protocolo ? null : protocolo;
+  atualizarAgenda();
+  focarItem(protocolo);
+}
+
+/** Botões Concluir e Cancelar: chamam o método da classe (this = aquele agendamento). */
+function executarAcao(acao, protocolo) {
+  const agendamento = agendamentos.find((item) => item.protocolo === protocolo);
+  if (!agendamento) return;
+
+  try {
+    if (acao === 'concluir') {
+      agendamento.concluir();
+    } else if (acao === 'cancelar') {
+      agendamento.cancelar();
+    }
+  } catch (erro) {
+    console.warn('[AgendaPet]', erro.message);
+  }
+
+  atualizarAgenda();
+  atualizarFechamento(); // o faturamento muda quando alguém é concluído
+  focarItem(protocolo);
+}
+
+// ----- Mouse: UM listener na lista inteira (delegação de eventos) -----
+// Em vez de colocar um evento em cada item, a lista escuta tudo e
+// descobre, com closest(), em qual item ou botão o clique aconteceu.
+
+controles.lista.addEventListener('click', (evento) => {
+  const botao = evento.target.closest('button[data-acao]');
+  const item = evento.target.closest('.agenda__item');
+  if (!item) return;
+
+  if (botao) {
+    executarAcao(botao.dataset.acao, item.dataset.protocolo);
+  } else {
+    alternarSelecao(item.dataset.protocolo);
+  }
+});
+
+// mouseover/mouseout: destaque ao passar o mouse
+controles.lista.addEventListener('mouseover', (evento) => {
+  const item = evento.target.closest('.agenda__item');
+  if (item) destacarItem(item, true);
+});
+
+controles.lista.addEventListener('mouseout', (evento) => {
+  const item = evento.target.closest('.agenda__item');
+  // relatedTarget = para onde o mouse foi. Se ainda está dentro do item, mantém o destaque.
+  if (item && !item.contains(evento.relatedTarget)) destacarItem(item, false);
+});
+
+// ----- Teclado no item: Enter ou Espaço selecionam (os botões já funcionam sozinhos) -----
+controles.lista.addEventListener('keydown', (evento) => {
+  const ehItem = evento.target.classList.contains('agenda__item');
+  if (ehItem && (evento.key === 'Enter' || evento.key === ' ')) {
+    evento.preventDefault(); // o Espaço não rola a página
+    alternarSelecao(evento.target.dataset.protocolo);
+  }
+});
+
+// ----- Busca em tempo real: o evento "input" dispara a cada letra -----
+controles.busca.addEventListener('input', () => {
+  estadoAgenda.busca = controles.busca.value;
+  atualizarAgenda();
+});
+
+// ----- Filtro por status -----
+controles.filtroStatus.addEventListener('change', () => {
+  estadoAgenda.status = controles.filtroStatus.value;
+  atualizarAgenda();
+});
+
+// ----- Atalhos globais: N, / e Esc -----
+document.addEventListener('keydown', (evento) => {
+  // Ctrl/Alt/Cmd + tecla são atalhos do navegador: não mexemos
+  if (evento.ctrlKey || evento.altKey || evento.metaKey) return;
+
+  if (evento.key === 'Escape') {
+    if (estadoAgenda.busca !== '') {
+      limparBusca();
+      estadoAgenda.busca = '';
+      atualizarAgenda();
+    }
+    return;
+  }
+
+  // Se a pessoa está digitando num campo, "n" e "/" são letras normais
+  const digitando = evento.target.closest('input, textarea, select, [contenteditable="true"]');
+  if (digitando) return;
+
+  if (evento.key === 'n' || evento.key === 'N') {
+    evento.preventDefault();
+    focarFormulario();
+  } else if (evento.key === '/') {
+    evento.preventDefault(); // no Firefox, "/" abriria a busca da página
+    focarBusca();
+  }
+});
+
+// ----- Exportar agenda -----
+// JSON.stringify chama o toJSON() de cada agendamento (dominio/agendamento.js).
+// null, 2 = formatado com 2 espaços, fácil de ler. É o formato lido pelos scripts de Node (US11).
+controles.botaoExportar.addEventListener('click', () => {
+  mostrarExportacao(JSON.stringify(ordenarParaExportar(), null, 2));
+});
+
+function ordenarParaExportar() {
+  return filtrarAgenda(agendamentos, { status: 'Todos', busca: '' });
+}
+
+controles.botaoCopiar.addEventListener('click', copiarExportacao);
+
+controles.botaoBaixar.addEventListener('click', () => {
+  baixarExportacao(`agenda-agendapet-${dataParaISO(new Date())}.json`);
+});
+
+// ---------------------------------------------------------
 // Fechamento do dia (US07)
 // ---------------------------------------------------------
 
@@ -283,6 +431,6 @@ campoDiaFechamento.addEventListener('change', atualizarFechamento);
 
 definirDataMinima(dataParaISO(new Date()));
 definirDiaFechamento(dataParaISO(new Date()));
-mostrarAgenda(agendamentos);
+atualizarAgenda();
 atualizarFechamento();
 carregarCatalogo();

@@ -216,31 +216,204 @@ export function limparFormulario() {
 }
 
 // =========================================================
-// Agenda simples (provisória até a US06)
+// Agenda do dia (US06)
 // =========================================================
 
 const agendaVazia = document.querySelector('[data-agenda-vazia]');
 const agendaLista = document.querySelector('[data-agenda-lista]');
+const agendaContador = document.querySelector('[data-agenda-contador]');
+const campoBusca = document.querySelector('[data-agenda-busca]');
+const campoFiltroStatus = document.querySelector('[data-agenda-filtro]');
+const botaoExportar = document.querySelector('[data-exportar]');
+const botaoCopiar = document.querySelector('[data-copiar]');
+const botaoBaixar = document.querySelector('[data-baixar]');
+const areaExportacao = document.querySelector('[data-exportacao]');
+const textoExportacao = document.querySelector('[data-exportacao-texto]');
+const statusExportacao = document.querySelector('[data-exportacao-status]');
+
+/** Entrega ao app.js os elementos que recebem eventos. */
+export function obterControlesAgenda() {
+  return {
+    lista: agendaLista,
+    busca: campoBusca,
+    filtroStatus: campoFiltroStatus,
+    botaoExportar,
+    botaoCopiar,
+    botaoBaixar,
+  };
+}
 
 /**
- * Desenha a lista de agendamentos salvos.
- * Tudo com createElement + textContent (nada de innerHTML com dados digitados).
+ * Status -> pedaço do nome da classe CSS.
+ * switch: escolhe um caminho conforme o valor (alternativa a vários if-else).
  */
-export function mostrarAgenda(agendamentos) {
-  agendaVazia.hidden = agendamentos.length > 0;
+function classeDoStatus(status) {
+  switch (status) {
+    case 'Concluído':
+      return 'concluido';
+    case 'Cancelado':
+      return 'cancelado';
+    default:
+      return 'agendado';
+  }
+}
 
-  const itens = agendamentos.map((agendamento) => {
-    const item = document.createElement('li');
-    item.classList.add('agenda-simples__item');
-    // resumo() e calcularValor() são métodos da classe (US07).
-    // Se for AgendamentoDomiciliar, o resumo já inclui o endereço e o valor, a taxa.
-    item.textContent =
-      `${agendamento.protocolo} · ${formatarData(agendamento.data)} às ${agendamento.horario} – ` +
-      `${agendamento.resumo()} · ${formatarMoeda(agendamento.calcularValor())}`;
-    return item;
-  });
+/** Atalho para criar um elemento já com classe e texto. */
+function criarElemento(tag, classe, texto = '') {
+  const elemento = document.createElement(tag);
+  elemento.classList.add(classe);
+  elemento.textContent = texto;
+  return elemento;
+}
 
+/**
+ * Monta um <li> da agenda. Exemplo do resultado:
+ * <li class="agenda__item agenda__item--agendado" tabindex="0" data-protocolo="AP-0001">
+ *   <p class="agenda__quando">30/10/2026 · 09:00 · AP-0001</p>
+ *   <p class="agenda__resumo">Rex (Banho) · tutor: Ana</p>
+ *   <p class="agenda__valor">R$ 60,00</p>
+ *   <span class="status status--agendado">Agendado</span>
+ *   <p class="agenda__detalhes">…só aparece quando o item está selecionado…</p>
+ *   <div class="agenda__acoes"><button>Concluir</button><button>Cancelar</button></div>
+ * </li>
+ */
+function criarItemAgenda(agendamento, selecionado) {
+  const item = document.createElement('li');
+  item.classList.add('agenda__item', `agenda__item--${classeDoStatus(agendamento.status)}`);
+  if (selecionado) {
+    item.classList.add('agenda__item--selecionado');
+  }
+  // dataset.protocolo vira o atributo data-protocolo="AP-0001": é assim que
+  // o app.js descobre em qual agendamento a pessoa clicou.
+  item.dataset.protocolo = agendamento.protocolo;
+  item.tabIndex = 0; // o item pode receber foco com Tab
+  item.setAttribute('aria-label', `${agendamento.protocolo}, ${agendamento.pet}, ${agendamento.status}. Enter para ver detalhes.`);
+
+  const quando = criarElemento('p', 'agenda__quando',
+    `${formatarData(agendamento.data)} · ${agendamento.horario} · ${agendamento.protocolo}`);
+  const resumo = criarElemento('p', 'agenda__resumo', agendamento.resumo());
+  const valor = criarElemento('p', 'agenda__valor', formatarMoeda(agendamento.calcularValor()));
+  const status = criarElemento('span', 'status', agendamento.status);
+  status.classList.add(`status--${classeDoStatus(agendamento.status)}`);
+
+  item.append(quando, resumo, valor, status);
+
+  // Detalhes: só para o item selecionado
+  if (selecionado) {
+    const partes = [`Telefone: ${agendamento.telefone}`, `Espécie: ${agendamento.especie}`];
+    if (agendamento.observacoes) {
+      partes.push(`Obs.: ${agendamento.observacoes}`);
+    }
+    item.append(criarElemento('p', 'agenda__detalhes', partes.join(' · ')));
+  }
+
+  // Botões só para quem ainda está "Agendado"
+  if (agendamento.status === 'Agendado') {
+    const acoes = criarElemento('div', 'agenda__acoes');
+
+    const concluir = criarElemento('button', 'botao', 'Concluir');
+    concluir.type = 'button';
+    concluir.dataset.acao = 'concluir';
+    concluir.setAttribute('aria-label', `Concluir ${agendamento.protocolo} (${agendamento.pet})`);
+
+    const cancelar = criarElemento('button', 'botao', 'Cancelar');
+    cancelar.classList.add('botao--perigo');
+    cancelar.type = 'button';
+    cancelar.dataset.acao = 'cancelar';
+    cancelar.setAttribute('aria-label', `Cancelar ${agendamento.protocolo} (${agendamento.pet})`);
+
+    acoes.append(concluir, cancelar);
+    item.append(acoes);
+  }
+
+  return item;
+}
+
+/**
+ * Desenha a agenda.
+ * @param {Agendamento[]} visiveis – já filtrados e ordenados (dominio/regras.js)
+ * @param {{ total: number, selecionado: string|null }} info
+ */
+export function mostrarAgenda(visiveis, { total, selecionado }) {
+  const quantidade = visiveis.length;
+  const texto = quantidade === 1 ? '1 agendamento' : `${quantidade} agendamentos`;
+  // Se algum filtro escondeu itens, mostra também o total
+  agendaContador.textContent = quantidade < total ? `${texto} (de ${total})` : texto;
+
+  agendaVazia.hidden = quantidade > 0;
+  agendaVazia.textContent = total === 0
+    ? 'Nenhum agendamento ainda.'
+    : 'Nenhum agendamento encontrado para essa busca ou filtro.';
+
+  const itens = visiveis.map((agendamento) => criarItemAgenda(agendamento, agendamento.protocolo === selecionado));
   agendaLista.replaceChildren(...itens);
+}
+
+/** Destaque ao passar o mouse (ou ao receber foco pelo teclado). */
+export function destacarItem(item, ativo) {
+  item.classList.toggle('agenda__item--destaque', ativo);
+}
+
+/** Devolve o foco a um item depois de redesenhar a lista. */
+export function focarItem(protocolo) {
+  const item = agendaLista.querySelector(`[data-protocolo="${protocolo}"]`);
+  if (item) {
+    item.focus();
+  }
+}
+
+// ---------- Atalhos de teclado ----------
+
+export function focarBusca() {
+  campoBusca.focus();
+  campoBusca.select();
+}
+
+export function limparBusca() {
+  campoBusca.value = '';
+}
+
+/** Atalho "N": rola até o formulário e coloca o cursor no primeiro campo. */
+export function focarFormulario() {
+  const primeiroCampo = formulario.querySelector('[name="tutor"]');
+  primeiroCampo.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  primeiroCampo.focus({ preventScroll: true });
+}
+
+// ---------- Exportar agenda ----------
+
+export function mostrarExportacao(json) {
+  areaExportacao.hidden = false;
+  textoExportacao.value = json;
+  statusExportacao.textContent = '';
+  textoExportacao.focus();
+  textoExportacao.select();
+}
+
+/** Copia o JSON. Se o navegador bloquear a área de transferência, deixa o texto selecionado. */
+export async function copiarExportacao() {
+  try {
+    await navigator.clipboard.writeText(textoExportacao.value);
+    statusExportacao.textContent = 'JSON copiado!';
+  } catch {
+    textoExportacao.select();
+    statusExportacao.textContent = 'Não foi possível copiar sozinho: o texto está selecionado, use Ctrl + C.';
+  }
+}
+
+/**
+ * Bônus: baixa o JSON como arquivo.
+ * Blob = um "arquivo" criado na memória; o link <a download> faz o navegador salvá-lo.
+ */
+export function baixarExportacao(nomeArquivo) {
+  const arquivo = new Blob([textoExportacao.value], { type: 'application/json' });
+  const endereco = URL.createObjectURL(arquivo);
+  const link = document.createElement('a');
+  link.href = endereco;
+  link.download = nomeArquivo;
+  link.click();
+  URL.revokeObjectURL(endereco); // libera a memória
+  statusExportacao.textContent = `Arquivo ${nomeArquivo} baixado.`;
 }
 
 // =========================================================

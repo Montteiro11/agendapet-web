@@ -89,6 +89,14 @@ Kanban: https://trello.com/invite/b/6ad7b4650e20d991aeb3ed0c/ATTI16f8530ccd3f003
 - **Tema escuro:** todas as cores do CSS são variáveis. O JavaScript coloca `data-tema="escuro"` na tag `<html>` e a regra `:root[data-tema="escuro"]` troca só os valores das variáveis.
 - **Exportar agenda:** continua mostrando o JSON formatado, no mesmo formato salvo no `localStorage`.
 
+### Relógio e lembretes de atendimento (US09)
+- **setInterval** a cada **30 segundos** atualiza o relógio do cabeçalho, o texto "Próximo atendimento: … (em X min)", os atrasados e o "Próximo atendimento" do fechamento.
+- **Atrasado:** atendimento de hoje cujo horário já passou e que continua como Agendado. Ganha a etiqueta vermelha "Atrasado há X min" e a borda vermelha.
+- **Lembrete visual:** faltando **15 minutos ou menos**, o atendimento ganha a etiqueta "Em X min" e a borda laranja, e aparece um aviso (uma única vez por atendimento).
+- **setTimeout:** os avisos temporários (toast) de lembrete, concluir, cancelar, pausar e limpar dados somem sozinhos depois de alguns segundos. Se chegar um aviso novo, o timer anterior é cancelado com `clearTimeout`, então os timers nunca se acumulam.
+- **Pausar/Retomar lembretes:** o botão chama `clearInterval` e guarda `null` no lugar do id do timer. Ao retomar, um novo `setInterval` só é criado se não houver outro rodando (sem timers duplicados).
+- O cálculo fica em `js/dominio/lembretes.js` (sem DOM e sem timers), com testes em `npm test`.
+
 ## Autoria
 - Desenvolvido por **Vanessa Monteiro Paim**.
 

@@ -19,6 +19,7 @@ import {
 } from '../js/dominio/agendamento.js';
 import { haConflito, encontrarConflito, filtrarAgendamentos, filtrarAgenda } from '../js/dominio/regras.js';
 import { calcularFechamento } from '../js/dominio/fechamento.js';
+import { analisarLembretes, minutosAte } from '../js/dominio/lembretes.js';
 
 // Dados base reaproveitados nos testes
 const base = {
@@ -154,4 +155,29 @@ test('agenda (US06): busca por tutor ou pet, sem diferenciar maiúscula e acento
   assert.equal(filtrarAgenda(lista, { busca: 'brun' })[0].protocolo, 'AP-0002');
   assert.equal(filtrarAgenda(lista, { status: 'Cancelado' }).length, 1);
   assert.equal(filtrarAgenda(lista, { status: 'Agendado', busca: 'rex' }).length, 0);
+});
+
+test('lembretes (US09): próximo atendimento, lembrete a 15 min ou menos e atrasados', () => {
+  const lista = [
+    new Agendamento({ ...base, protocolo: 'AP-0001', horario: '09:00' }), // já passou -> atrasado
+    new Agendamento({ ...base, protocolo: 'AP-0002', horario: '10:10' }), // faltam 10 min -> em breve
+    new Agendamento({ ...base, protocolo: 'AP-0003', horario: '11:00' }), // faltam 60 min
+    new Agendamento({ ...base, protocolo: 'AP-0004', horario: '08:00' }), // concluído: não entra
+  ];
+  lista[3].concluir();
+
+  // "agora" fixo: 23/10/2026 às 10:00
+  const resultado = analisarLembretes(lista, new Date(2026, 9, 23, 10, 0));
+
+  assert.equal(resultado.proximo.protocolo, 'AP-0002');
+  assert.equal(resultado.minutosProximo, 10);
+  assert.deepEqual(resultado.alertas['AP-0001'], { tipo: 'atrasado', minutos: 60 });
+  assert.deepEqual(resultado.alertas['AP-0002'], { tipo: 'em-breve', minutos: 10 });
+  assert.equal(resultado.alertas['AP-0003'], undefined);
+  assert.equal(resultado.atrasados, 1);
+});
+
+test('lembretes (US09): minutosAte calcula a diferença em minutos', () => {
+  assert.equal(minutosAte('2026-10-23', '10:30', new Date(2026, 9, 23, 10, 0)), 30);
+  assert.equal(minutosAte('2026-10-23', '09:45', new Date(2026, 9, 23, 10, 0)), -15);
 });

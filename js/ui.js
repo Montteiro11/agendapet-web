@@ -277,7 +277,7 @@ function criarElemento(tag, classe, texto = '') {
  *   <div class="agenda__acoes"><button>Concluir</button><button>Cancelar</button></div>
  * </li>
  */
-function criarItemAgenda(agendamento, selecionado) {
+function criarItemAgenda(agendamento, selecionado, alerta) {
   const item = document.createElement('li');
   item.classList.add('agenda__item', `agenda__item--${classeDoStatus(agendamento.status)}`);
   if (selecionado) {
@@ -297,6 +297,17 @@ function criarItemAgenda(agendamento, selecionado) {
   status.classList.add(`status--${classeDoStatus(agendamento.status)}`);
 
   item.append(quando, resumo, valor, status);
+
+  // US09: lembrete visual (a 15 min ou menos) ou atraso
+  if (alerta) {
+    const texto = alerta.tipo === 'atrasado'
+      ? `Atrasado há ${alerta.minutos} min`
+      : alerta.minutos === 0 ? 'É agora!' : `Em ${alerta.minutos} min`;
+    const etiqueta = criarElemento('span', 'alerta', texto);
+    etiqueta.classList.add(`alerta--${alerta.tipo}`);
+    item.classList.add(`agenda__item--${alerta.tipo}`);
+    item.append(etiqueta);
+  }
 
   // Detalhes: só para o item selecionado
   if (selecionado) {
@@ -334,7 +345,7 @@ function criarItemAgenda(agendamento, selecionado) {
  * @param {Agendamento[]} visiveis – já filtrados e ordenados (dominio/regras.js)
  * @param {{ total: number, selecionado: string|null }} info
  */
-export function mostrarAgenda(visiveis, { total, selecionado }) {
+export function mostrarAgenda(visiveis, { total, selecionado, alertas = {} }) {
   const quantidade = visiveis.length;
   const texto = quantidade === 1 ? '1 agendamento' : `${quantidade} agendamentos`;
   // Se algum filtro escondeu itens, mostra também o total
@@ -345,8 +356,18 @@ export function mostrarAgenda(visiveis, { total, selecionado }) {
     ? 'Nenhum agendamento ainda.'
     : 'Nenhum agendamento encontrado para essa busca ou filtro.';
 
-  const itens = visiveis.map((agendamento) => criarItemAgenda(agendamento, agendamento.protocolo === selecionado));
+  // Guarda qual item estava com o foco: redesenhar a lista apagaria o foco
+  // (importante porque o relógio redesenha a cada 30 segundos, US09)
+  const protocoloComFoco = document.activeElement?.closest?.('.agenda__item')?.dataset.protocolo;
+
+  const itens = visiveis.map((agendamento) =>
+    criarItemAgenda(agendamento, agendamento.protocolo === selecionado, alertas[agendamento.protocolo])
+  );
   agendaLista.replaceChildren(...itens);
+
+  if (protocoloComFoco) {
+    focarItem(protocoloComFoco);
+  }
 }
 
 /** Destaque ao passar o mouse (ou ao receber foco pelo teclado). */
@@ -604,4 +625,46 @@ export function mostrarStatusDados(texto) {
 export function esconderExportacao() {
   areaExportacao.hidden = true;
   textoExportacao.value = '';
+}
+
+// =========================================================
+// Relógio, lembretes e aviso temporário (US09)
+// =========================================================
+
+const relogio = document.querySelector('[data-relogio]');
+const textoLembrete = document.querySelector('[data-lembrete-texto]');
+const botaoPausar = document.querySelector('[data-pausar-lembretes]');
+const toast = document.querySelector('[data-toast]');
+
+export function obterBotaoPausar() {
+  return botaoPausar;
+}
+
+export function mostrarRelogio(horaTexto) {
+  relogio.textContent = horaTexto;
+  relogio.dateTime = horaTexto; // atributo datetime da tag <time>
+}
+
+export function mostrarTextoLembrete(texto) {
+  textoLembrete.textContent = texto;
+}
+
+export function marcarLembretesPausados(pausado) {
+  botaoPausar.textContent = pausado ? 'Retomar lembretes' : 'Pausar lembretes';
+  botaoPausar.setAttribute('aria-pressed', String(pausado));
+}
+
+// Guarda o timer do toast. Se chegar um aviso novo antes do anterior sumir,
+// o timer antigo é cancelado: assim os timers nunca se acumulam.
+let timerToast = null;
+
+/** Mostra um aviso no rodapé da tela que some sozinho (setTimeout). */
+export function mostrarToast(texto, duracaoMs = 4000) {
+  clearTimeout(timerToast);
+  toast.textContent = texto;
+  toast.hidden = false;
+  timerToast = setTimeout(() => {
+    toast.hidden = true;
+    timerToast = null;
+  }, duracaoMs);
 }

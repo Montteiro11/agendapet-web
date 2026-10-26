@@ -6,7 +6,8 @@
 
 import { buscarServicos, buscarEndereco, buscarFeriados } from './api.js';
 import { validarAgendamento, dataParaISO, encontrarConflito, filtrarAgenda } from './dominio/regras.js';
-import { criarAgendamento, criarGeradorDeProtocolo } from './dominio/agendamento.js';
+import { criarAgendamento, criarGeradorDeProtocolo, numeroDoProtocolo } from './dominio/agendamento.js';
+import { lerJSON, salvarJSON, removerDadosDoApp, CHAVES } from './storage.js';
 import { calcularFechamento } from './dominio/fechamento.js';
 import {
   mostrarCatalogoCarregando,
@@ -42,6 +43,12 @@ import {
   mostrarExportacao,
   copiarExportacao,
   baixarExportacao,
+  obterControlesDados,
+  aplicarTema,
+  definirFiltroStatus,
+  pedirConfirmacaoLimpeza,
+  mostrarStatusDados,
+  esconderExportacao,
 } from './ui.js';
 
 // Lista de serviços vinda do catálogo (US02).
@@ -54,7 +61,8 @@ let servicos = [];
 const agendamentos = [];
 
 // Gerador de protocolos AP-0001, AP-0002... (closure, ver dominio/agendamento.js)
-const gerarProtocolo = criarGeradorDeProtocolo();
+// let: depois de carregar a agenda salva (US08), ele recomeça do último número usado.
+let gerarProtocolo = criarGeradorDeProtocolo();
 
 // ---------------------------------------------------------
 // Catálogo (US02)
@@ -148,6 +156,7 @@ async function aoEnviarFormulario(evento) {
   const agendamento = criarAgendamento(dadosAgendamento);
 
   agendamentos.push(agendamento);
+  salvarAgenda();
   atualizarAgenda();
   atualizarFechamento();
 
@@ -314,6 +323,7 @@ function executarAcao(acao, protocolo) {
     console.warn('[AgendaPet]', erro.message);
   }
 
+  salvarAgenda();
   atualizarAgenda();
   atualizarFechamento(); // o faturamento muda quando alguém é concluído
   focarItem(protocolo);
@@ -365,6 +375,7 @@ controles.busca.addEventListener('input', () => {
 // ----- Filtro por status -----
 controles.filtroStatus.addEventListener('change', () => {
   estadoAgenda.status = controles.filtroStatus.value;
+  salvarJSON(CHAVES.FILTRO, estadoAgenda.status); // US08: o filtro volta depois do F5
   atualizarAgenda();
 });
 
@@ -413,6 +424,104 @@ controles.botaoBaixar.addEventListener('click', () => {
 });
 
 // ---------------------------------------------------------
+// Persistência: agenda, filtro e tema (US08)
+// ---------------------------------------------------------
+
+const STATUS_DO_FILTRO = ['Todos', 'Agendado', 'Concluído', 'Cancelado'];
+
+/** Grava a agenda inteira. JSON.stringify usa o toJSON() de cada agendamento. */
+function salvarAgenda() {
+  salvarJSON(CHAVES.AGENDA, agendamentos);
+}
+
+/** Confere se um item lido do localStorage tem o mínimo para virar um Agendamento. */
+function pareceAgendamento(item) {
+  return item !== null
+    && typeof item === 'object'
+    && typeof item.protocolo === 'string'
+    && typeof item.data === 'string'
+    && typeof item.horario === 'string';
+}
+
+/**
+ * Lê a agenda salva e transforma cada objeto simples de volta em
+ * Agendamento ou AgendamentoDomiciliar (para ter os métodos de novo).
+ * Se o valor estiver corrompido, lerJSON devolve [] e a página abre vazia, sem erro.
+ */
+function carregarAgendaSalva() {
+  const salvos = lerJSON(CHAVES.AGENDA, []);
+  const lista = Array.isArray(salvos) ? salvos.filter(pareceAgendamento) : [];
+
+  if (Array.isArray(salvos) && lista.length < salvos.length) {
+    console.warn(`[AgendaPet] ${salvos.length - lista.length} item(ns) inválido(s) ignorado(s) na agenda salva.`);
+  }
+
+  agendamentos.push(...lista.map(criarAgendamento));
+
+  // O próximo protocolo continua de onde parou (ex.: tinha AP-0005 -> próximo AP-0006)
+  const maiorNumero = Math.max(0, ...agendamentos.map((item) => numeroDoProtocolo(item.protocolo)));
+  gerarProtocolo = criarGeradorDeProtocolo(maiorNumero);
+}
+
+function carregarPreferencias() {
+  const filtro = lerJSON(CHAVES.FILTRO, 'Todos');
+  // includes: só aceita um dos 4 valores conhecidos (protege contra valor estranho)
+  estadoAgenda.status = STATUS_DO_FILTRO.includes(filtro) ? filtro : 'Todos';
+  definirFiltroStatus(estadoAgenda.status);
+
+  const tema = lerJSON(CHAVES.TEMA, 'claro');
+  aplicarTema(tema === 'escuro' ? 'escuro' : 'claro');
+}
+
+const controlesDados = obterControlesDados();
+
+// ----- Tema claro/escuro -----
+controlesDados.botaoTema.addEventListener('click', () => {
+  const novoTema = document.documentElement.dataset.tema === 'escuro' ? 'claro' : 'escuro';
+  aplicarTema(novoTema);
+  salvarJSON(CHAVES.TEMA, novoTema);
+});
+
+// ----- Limpar meus dados (com segundo clique para confirmar) -----
+// Sem confirm(): as janelas do navegador travam a página e não seguem o visual do sistema.
+let aguardandoConfirmacao = false;
+let timerConfirmacao = null;
+
+controlesDados.botaoLimparDados.addEventListener('click', () => {
+  if (!aguardandoConfirmacao) {
+    aguardandoConfirmacao = true;
+    pedirConfirmacaoLimpeza(true);
+    // Se não confirmar em 5 segundos, o botão volta ao normal
+    timerConfirmacao = setTimeout(() => {
+      aguardandoConfirmacao = false;
+      pedirConfirmacaoLimpeza(false);
+    }, 5000);
+    return;
+  }
+
+  clearTimeout(timerConfirmacao);
+  aguardandoConfirmacao = false;
+  pedirConfirmacaoLimpeza(false);
+
+  const apagadas = removerDadosDoApp();
+
+  // Volta tudo ao estado inicial
+  agendamentos.length = 0; // esvazia o array sem trocar a variável const
+  gerarProtocolo = criarGeradorDeProtocolo();
+  estadoAgenda.status = 'Todos';
+  estadoAgenda.busca = '';
+  estadoAgenda.selecionado = null;
+  definirFiltroStatus('Todos');
+  limparBusca();
+  aplicarTema('claro');
+  esconderExportacao();
+  atualizarAgenda();
+  atualizarFechamento();
+
+  mostrarStatusDados(`Dados apagados (${apagadas} ${apagadas === 1 ? 'chave' : 'chaves'} do AgendaPet).`);
+});
+
+// ---------------------------------------------------------
 // Fechamento do dia (US07)
 // ---------------------------------------------------------
 
@@ -431,6 +540,8 @@ campoDiaFechamento.addEventListener('change', atualizarFechamento);
 
 definirDataMinima(dataParaISO(new Date()));
 definirDiaFechamento(dataParaISO(new Date()));
+carregarAgendaSalva();
+carregarPreferencias();
 atualizarAgenda();
 atualizarFechamento();
 carregarCatalogo();

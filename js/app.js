@@ -5,10 +5,11 @@
 // =========================================================
 
 import { buscarServicos, buscarEndereco, buscarFeriados } from './api.js';
-import { validarAgendamento, dataParaISO, encontrarConflito, filtrarAgenda } from './dominio/regras.js';
+import { validarAgendamento, dataParaISO, horaParaTexto, encontrarConflito, filtrarAgenda } from './dominio/regras.js';
 import { criarAgendamento, criarGeradorDeProtocolo, numeroDoProtocolo } from './dominio/agendamento.js';
 import { lerJSON, salvarJSON, removerDadosDoApp, CHAVES } from './storage.js';
 import { calcularFechamento } from './dominio/fechamento.js';
+import { analisarLembretes, MINUTOS_LEMBRETE } from './dominio/lembretes.js';
 import {
   mostrarCatalogoCarregando,
   mostrarCatalogoErro,
@@ -49,6 +50,11 @@ import {
   pedirConfirmacaoLimpeza,
   mostrarStatusDados,
   esconderExportacao,
+  obterBotaoPausar,
+  mostrarRelogio,
+  mostrarTextoLembrete,
+  marcarLembretesPausados,
+  mostrarToast,
 } from './ui.js';
 
 // Lista de serviços vinda do catálogo (US02).
@@ -157,6 +163,7 @@ async function aoEnviarFormulario(evento) {
 
   agendamentos.push(agendamento);
   salvarAgenda();
+  recalcularLembretes();
   atualizarAgenda();
   atualizarFechamento();
 
@@ -298,7 +305,11 @@ const estadoAgenda = {
 /** Filtra, ordena (dominio/regras.js) e desenha (ui.js). */
 function atualizarAgenda() {
   const visiveis = filtrarAgenda(agendamentos, estadoAgenda);
-  mostrarAgenda(visiveis, { total: agendamentos.length, selecionado: estadoAgenda.selecionado });
+  mostrarAgenda(visiveis, {
+    total: agendamentos.length,
+    selecionado: estadoAgenda.selecionado,
+    alertas: estadoLembretes.alertas, // US09: etiquetas "Em X min" / "Atrasado"
+  });
 }
 
 /** Clicou (ou apertou Enter/Espaço) num item: seleciona; de novo, tira a seleção. */
@@ -316,14 +327,17 @@ function executarAcao(acao, protocolo) {
   try {
     if (acao === 'concluir') {
       agendamento.concluir();
+      mostrarToast(`${agendamento.protocolo} (${agendamento.pet}) concluído.`);
     } else if (acao === 'cancelar') {
       agendamento.cancelar();
+      mostrarToast(`${agendamento.protocolo} (${agendamento.pet}) cancelado.`);
     }
   } catch (erro) {
     console.warn('[AgendaPet]', erro.message);
   }
 
   salvarAgenda();
+  recalcularLembretes();
   atualizarAgenda();
   atualizarFechamento(); // o faturamento muda quando alguém é concluído
   focarItem(protocolo);
@@ -424,6 +438,79 @@ controles.botaoBaixar.addEventListener('click', () => {
 });
 
 // ---------------------------------------------------------
+// Relógio e lembretes (US09)
+// ---------------------------------------------------------
+
+// A cada 30 segundos: relógio, "próximo em X min", atrasados e lembretes
+const INTERVALO_LEMBRETES_MS = 30 * 1000;
+
+const estadoLembretes = {
+  idIntervalo: null,      // número devolvido pelo setInterval (null = parado)
+  alertas: {},            // { "AP-0003": { tipo: 'em-breve', minutos: 10 } }
+  jaAvisados: new Set(),  // protocolos que já ganharam o toast de lembrete (Set = lista sem repetidos)
+};
+
+/** Recalcula os lembretes com a hora atual e atualiza o texto. Não mexe no timer. */
+function recalcularLembretes() {
+  if (estadoLembretes.idIntervalo === null) return; // pausado: não atualiza
+
+  const agora = new Date();
+  const { proximo, minutosProximo, alertas, atrasados } = analisarLembretes(agendamentos, agora);
+  estadoLembretes.alertas = alertas;
+
+  // Texto do próximo atendimento (com ternário para singular/plural)
+  let texto = proximo
+    ? `Próximo atendimento: ${proximo.pet} às ${proximo.horario} (${minutosProximo === 0 ? 'agora' : `em ${minutosProximo} min`}).`
+    : 'Nenhum atendimento pendente hoje.';
+  if (atrasados > 0) {
+    texto += ` ${atrasados} ${atrasados === 1 ? 'atrasado' : 'atrasados'}.`;
+  }
+  mostrarTextoLembrete(texto);
+
+  // Toast uma única vez por agendamento quando entra nos últimos 15 minutos
+  for (const [protocolo, alerta] of Object.entries(alertas)) {
+    if (alerta.tipo === 'em-breve' && !estadoLembretes.jaAvisados.has(protocolo)) {
+      estadoLembretes.jaAvisados.add(protocolo);
+      const agendamento = agendamentos.find((item) => item.protocolo === protocolo);
+      mostrarToast(`Lembrete: ${agendamento.pet} às ${agendamento.horario} (faltam ${MINUTOS_LEMBRETE} min ou menos).`, 6000);
+    }
+  }
+}
+
+/** O que roda a cada "tique" do setInterval. */
+function tique() {
+  mostrarRelogio(horaParaTexto(new Date()));
+  recalcularLembretes();
+  atualizarAgenda();
+  atualizarFechamento(); // o "próximo atendimento" do fechamento também muda com a hora
+}
+
+function iniciarLembretes() {
+  // Se já está rodando, não cria outro: evita timers duplicados
+  if (estadoLembretes.idIntervalo !== null) return;
+  estadoLembretes.idIntervalo = setInterval(tique, INTERVALO_LEMBRETES_MS);
+  marcarLembretesPausados(false);
+  tique(); // atualiza na hora, sem esperar os primeiros 30 segundos
+}
+
+function pausarLembretes() {
+  clearInterval(estadoLembretes.idIntervalo); // para o setInterval
+  estadoLembretes.idIntervalo = null;
+  marcarLembretesPausados(true);
+  mostrarTextoLembrete('Lembretes pausados. O relógio e os avisos não estão sendo atualizados.');
+}
+
+obterBotaoPausar().addEventListener('click', () => {
+  if (estadoLembretes.idIntervalo === null) {
+    iniciarLembretes();
+    mostrarToast('Lembretes retomados.');
+  } else {
+    pausarLembretes();
+    mostrarToast('Lembretes pausados.');
+  }
+});
+
+// ---------------------------------------------------------
 // Persistência: agenda, filtro e tema (US08)
 // ---------------------------------------------------------
 
@@ -518,7 +605,10 @@ controlesDados.botaoLimparDados.addEventListener('click', () => {
   atualizarAgenda();
   atualizarFechamento();
 
+  recalcularLembretes();
+  atualizarAgenda();
   mostrarStatusDados(`Dados apagados (${apagadas} ${apagadas === 1 ? 'chave' : 'chaves'} do AgendaPet).`);
+  mostrarToast('Dados do AgendaPet apagados deste navegador.');
 });
 
 // ---------------------------------------------------------
@@ -542,6 +632,5 @@ definirDataMinima(dataParaISO(new Date()));
 definirDiaFechamento(dataParaISO(new Date()));
 carregarAgendaSalva();
 carregarPreferencias();
-atualizarAgenda();
-atualizarFechamento();
 carregarCatalogo();
+iniciarLembretes(); // primeiro tique: relógio, lembretes, agenda e fechamento

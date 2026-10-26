@@ -21,6 +21,20 @@
   --cor-texto-claro: #ffffff;
   --cor-erro: #b3261e;
   --cor-foco: #084341;
+  --cor-botao-hover: #084341;
+  --cor-perigo: #b3261e;
+  --cor-perigo-hover: #8c1d18;
+  --cor-erro-fundo: #fbeaea;
+  --cor-sucesso-fundo: #e3f1ef;
+  --cor-desabilitado: #efebe4;
+  --cor-aviso-texto: #7a4a00;
+  --cor-etiqueta-texto: #5c3800;
+  --cor-concluido: #2e7d32;
+  --cor-concluido-fundo: #e3f2e4;
+  --cor-concluido-texto: #1b5e20;
+  --cor-cancelado-fundo: #f6f3ee;
+  --cor-destaque-item: #eef6f5;
+  --cor-rodape: #e9e3d9;
 
   /* Espaçamentos */
   --espaco-1: 0.25rem;
@@ -39,6 +53,35 @@
   --raio: 0.75rem;
   --sombra: 0 2px 8px rgba(31, 42, 46, 0.08);
   --alvo-toque: 44px;               /* altura mínima confortável para o dedo */
+}
+
+/* ---------- 1b. Tema escuro (US08) ----------
+   O JavaScript coloca data-tema="escuro" na tag <html>.
+   Como TODAS as cores usam variáveis, basta trocar os valores aqui:
+   nenhuma outra regra do CSS precisa mudar. */
+:root[data-tema="escuro"] {
+  color-scheme: dark; /* calendário, relógio e barras de rolagem também ficam escuros */
+  --cor-primaria: #23716d;
+  --cor-primaria-escura: #8fd3cf;
+  --cor-botao-hover: #1a5653;
+  --cor-fundo: #121a1c;
+  --cor-superficie: #1c2629;
+  --cor-borda: #3b4a4d;
+  --cor-texto: #e8eef0;
+  --cor-texto-suave: #b3c1c4;
+  --cor-erro: #ff8a80;
+  --cor-foco: #8fd3cf;
+  --cor-erro-fundo: #3a1f1d;
+  --cor-sucesso-fundo: #163633;
+  --cor-desabilitado: #263235;
+  --cor-aviso-texto: #ffcc80;
+  --cor-concluido: #66bb6a;
+  --cor-concluido-fundo: #1d3320;
+  --cor-concluido-texto: #a5d6a7;
+  --cor-cancelado-fundo: #1f2224;
+  --cor-destaque-item: #20302f;
+  --cor-rodape: #0d1314;
+  --sombra: 0 2px 8px rgba(0, 0, 0, 0.4);
 }
 
 /* ---------- 2. Base ---------- */
@@ -119,6 +162,34 @@ h3 {
 .cabecalho__subtitulo {
   margin: 0;
   color: var(--cor-destaque-claro);
+}
+
+/* Ferramentas do cabeçalho: botão de tema (US08) */
+.cabecalho__ferramentas {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--espaco-2);
+}
+
+.cabecalho__botao {
+  min-height: var(--alvo-toque);
+  padding: 0 var(--espaco-3);
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  border-radius: var(--raio);
+  background-color: transparent;
+  color: var(--cor-texto-claro);
+  font: inherit;
+  cursor: pointer;
+}
+
+.cabecalho__botao:hover {
+  background-color: rgba(255, 255, 255, 0.15);
+}
+
+/* Mesmo motivo do .menu__link:focus-visible: contorno claro no fundo verde */
+.cabecalho__botao:focus-visible {
+  outline-color: var(--cor-texto-claro);
 }
 
 /* ---------- 5. Menu ---------- */
@@ -255,7 +326,7 @@ h3 {
   padding: 0.125rem var(--espaco-2);
   border-radius: 999px;
   background-color: var(--cor-destaque-claro);
-  color: #5c3800;
+  color: var(--cor-etiqueta-texto);
   font-size: 0.875rem;
 }
 
@@ -278,7 +349,7 @@ h3 {
   padding: var(--espaco-2) var(--espaco-3);
   border-left: 4px solid var(--cor-erro);
   border-radius: var(--raio);
-  background-color: #fbeaea;
+  background-color: var(--cor-erro-fundo);
   color: var(--cor-erro);
   font-weight: 600;
 }
@@ -293,7 +364,7 @@ h3 {
   padding: var(--espaco-2) var(--espaco-3);
   border-left: 4px solid var(--cor-primaria);
   border-radius: var(--raio);
-  background-color: #e3f1ef;
+  background-color: var(--cor-sucesso-fundo);
   color: var(--cor-primaria-escura);
   font-weight: 600;
 }
@@ -331,7 +402,7 @@ h3 {
 }
 
 .campo__entrada:disabled {
-  background-color: #efebe4;
+  background-color: var(--cor-desabilitado);
   color: var(--cor-texto-suave);
   cursor: not-allowed;
 }
@@ -433,11 +504,12 @@ h3 {
 
 /* ---------- 8b3. Feriado (US05) ---------- */
 .campo__status--aviso {
-  color: #7a4a00;
+  color: var(--cor-aviso-texto);
   font-weight: 600;
 }
 
 .feriado {
+  color: var(--cor-etiqueta-texto);
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -513,12 +585,12 @@ kbd {
 
 /* A cor da borda esquerda indica o status */
 .agenda__item--concluido {
-  border-left-color: #2e7d32;
+  border-left-color: var(--cor-concluido);
 }
 
 .agenda__item--cancelado {
   border-left-color: var(--cor-erro);
-  background-color: #f6f3ee;
+  background-color: var(--cor-cancelado-fundo);
 }
 
 .agenda__item--cancelado .agenda__resumo {
@@ -528,7 +600,7 @@ kbd {
 
 /* Destaque ao passar o mouse (classe colocada pelo JS no mouseover) */
 .agenda__item--destaque {
-  background-color: #eef6f5;
+  background-color: var(--cor-destaque-item);
 }
 
 /* Item selecionado (clique, Enter ou Espaço) */
@@ -562,17 +634,17 @@ kbd {
 }
 
 .status--agendado {
-  background-color: #e3f1ef;
+  background-color: var(--cor-sucesso-fundo);
   color: var(--cor-primaria-escura);
 }
 
 .status--concluido {
-  background-color: #e3f2e4;
-  color: #1b5e20;
+  background-color: var(--cor-concluido-fundo);
+  color: var(--cor-concluido-texto);
 }
 
 .status--cancelado {
-  background-color: #fbeaea;
+  background-color: var(--cor-erro-fundo);
   color: var(--cor-erro);
 }
 
@@ -597,6 +669,12 @@ kbd {
   align-items: flex-start;
   gap: var(--espaco-3);
   margin-top: var(--espaco-4);
+}
+
+.agenda__botoes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espaco-2);
 }
 
 .exportacao {
@@ -646,7 +724,7 @@ kbd {
 }
 
 .fechamento__item--destaque {
-  background-color: #e3f1ef;
+  background-color: var(--cor-sucesso-fundo);
 }
 
 .fechamento__rotulo {
@@ -684,7 +762,7 @@ kbd {
   padding: var(--espaco-1) var(--espaco-3);
   border-radius: 999px;
   background-color: var(--cor-destaque-claro);
-  color: #5c3800;
+  color: var(--cor-etiqueta-texto);
 }
 
 /* ---------- 9. Botões ---------- */
@@ -701,7 +779,7 @@ kbd {
 }
 
 .botao:hover {
-  background-color: var(--cor-primaria-escura);
+  background-color: var(--cor-botao-hover);
 }
 
 /* Botão "contornado": ação secundária */
@@ -712,22 +790,22 @@ kbd {
 }
 
 .botao--secundario:hover {
-  background-color: #e3f1ef;
+  background-color: var(--cor-sucesso-fundo);
 }
 
 /* Botão de ação destrutiva (Cancelar) */
 .botao--perigo {
-  background-color: var(--cor-erro);
+  background-color: var(--cor-perigo);
 }
 
 .botao--perigo:hover {
-  background-color: #8c1d18;
+  background-color: var(--cor-perigo-hover);
 }
 
 /* ---------- 10. Rodapé ---------- */
 .rodape {
   padding: var(--espaco-3);
-  background-color: #e9e3d9;
+  background-color: var(--cor-rodape);
   color: var(--cor-texto-suave);
   text-align: center;
   font-size: 0.875rem;

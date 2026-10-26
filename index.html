@@ -36,6 +36,11 @@
         <li><a class="menu__link" href="#fechamento-do-dia">Fechamento do dia</a></li>
       </ul>
     </nav>
+
+    <div class="cabecalho__ferramentas">
+      <!-- aria-pressed: o leitor de tela anuncia se o tema escuro está ligado ou desligado -->
+      <button class="cabecalho__botao" type="button" aria-pressed="false" data-botao-tema>Tema escuro</button>
+    </div>
   </header>
 
   <!-- main: conteúdo principal. tabindex="-1" deixa o skip link mover o foco para cá -->
@@ -241,7 +246,12 @@
         <ul class="agenda" data-agenda-lista></ul>
 
         <div class="agenda__exportar">
-          <button class="botao botao--secundario" type="button" data-exportar>Exportar agenda</button>
+          <div class="agenda__botoes">
+            <button class="botao botao--secundario" type="button" data-exportar>Exportar agenda</button>
+            <!-- US08: apaga só as chaves "agendapet:" do localStorage. Pede um segundo clique para confirmar. -->
+            <button class="botao botao--perigo" type="button" data-limpar-dados>Limpar meus dados</button>
+          </div>
+          <p class="campo__status" data-dados-status role="status"></p>
 
           <div class="exportacao" data-exportacao hidden>
             <label class="campo__rotulo" for="json-exportado">Agenda em JSON (copie ou baixe)</label>

@@ -559,3 +559,49 @@ export function mostrarFechamento(resumo) {
   fechamentoServicos.replaceChildren(...itens);
   fechamentoServicosVazio.hidden = itens.length > 0;
 }
+
+// =========================================================
+// Tema, filtro salvo e "Limpar meus dados" (US08)
+// =========================================================
+
+const botaoTema = document.querySelector('[data-botao-tema]');
+const botaoLimparDados = document.querySelector('[data-limpar-dados]');
+const statusDados = document.querySelector('[data-dados-status]');
+
+export function obterControlesDados() {
+  return { botaoTema, botaoLimparDados };
+}
+
+/**
+ * Aplica o tema colocando data-tema="escuro" (ou "claro") na tag <html>.
+ * O CSS troca as variáveis de cor em :root[data-tema="escuro"].
+ */
+export function aplicarTema(tema) {
+  const escuro = tema === 'escuro';
+  document.documentElement.dataset.tema = escuro ? 'escuro' : 'claro';
+  botaoTema.setAttribute('aria-pressed', String(escuro));
+  botaoTema.textContent = escuro ? 'Tema claro' : 'Tema escuro';
+}
+
+/** Coloca o select de status no valor salvo. */
+export function definirFiltroStatus(status) {
+  campoFiltroStatus.value = status;
+}
+
+/** Botão "Limpar meus dados" no modo "clique de novo para confirmar". */
+export function pedirConfirmacaoLimpeza(aguardando) {
+  botaoLimparDados.textContent = aguardando ? 'Clique de novo para confirmar' : 'Limpar meus dados';
+  statusDados.textContent = aguardando
+    ? 'Isso apaga a agenda, o filtro e o tema salvos neste navegador.'
+    : '';
+}
+
+export function mostrarStatusDados(texto) {
+  statusDados.textContent = texto;
+}
+
+/** Esconde a caixa do JSON exportado (depois de limpar os dados ela ficaria desatualizada). */
+export function esconderExportacao() {
+  areaExportacao.hidden = true;
+  textoExportacao.value = '';
+}

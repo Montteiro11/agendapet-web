@@ -80,6 +80,15 @@ Kanban: https://trello.com/invite/b/6ad7b4650e20d991aeb3ed0c/ATTI16f8530ccd3f003
 - **Exportar agenda:** mostra o JSON formatado para copiar, no mesmo formato que será lido pelos scripts de Node (US11). Bônus: botão para baixar como arquivo `.json`.
 - A busca, o filtro e a ordenação ficam em `js/dominio/regras.js` (`filtrarAgenda`), sem DOM, e têm testes em `npm test`.
 
+### Persistência e exportação dos dados (US08)
+- A agenda, o **filtro de status** e o **tema** (claro ou escuro) ficam salvos no `localStorage` e voltam depois de recarregar a página (F5).
+- Todo acesso passa por `js/storage.js`, com `JSON.stringify` e `JSON.parse` dentro de `try/catch`. Se um valor salvo estiver corrompido, a página abre normalmente (vazia) e um aviso aparece no console. Itens inválidos dentro da agenda são ignorados.
+- **Chaves usadas** (todas com o prefixo `agendapet:`): `agendapet:agenda`, `agendapet:filtro`, `agendapet:tema` e `agendapet:feriados:{ano}`.
+- Ao carregar, cada item salvo volta a ser um `Agendamento` ou `AgendamentoDomiciliar` (com os métodos), e o protocolo continua do último número usado.
+- **Limpar meus dados:** apaga **somente** as chaves que começam com `agendapet:`; dados de outros sites ficam intactos. Para evitar acidentes, pede um segundo clique de confirmação (sem usar `confirm()`).
+- **Tema escuro:** todas as cores do CSS são variáveis. O JavaScript coloca `data-tema="escuro"` na tag `<html>` e a regra `:root[data-tema="escuro"]` troca só os valores das variáveis.
+- **Exportar agenda:** continua mostrando o JSON formatado, no mesmo formato salvo no `localStorage`.
+
 ## Autoria
 - Desenvolvido por **Vanessa Monteiro Paim**.
 

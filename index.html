@@ -38,6 +38,8 @@
     </nav>
 
     <div class="cabecalho__ferramentas">
+      <!-- US09: relógio atualizado pelo setInterval. <time> é a tag semântica para horários. -->
+      <p class="relogio">Agora: <time class="relogio__hora" data-relogio>--:--</time></p>
       <!-- aria-pressed: o leitor de tela anuncia se o tema escuro está ligado ou desligado -->
       <button class="cabecalho__botao" type="button" aria-pressed="false" data-botao-tema>Tema escuro</button>
     </div>
@@ -238,6 +240,12 @@
           </div>
         </div>
 
+        <!-- US09: lembretes. O texto é atualizado a cada 30 segundos (setInterval). -->
+        <div class="lembretes">
+          <p class="lembretes__texto" data-lembrete-texto aria-live="polite">Nenhum atendimento pendente hoje.</p>
+          <button class="botao botao--secundario" type="button" aria-pressed="false" data-pausar-lembretes>Pausar lembretes</button>
+        </div>
+
         <!-- role="status": o leitor de tela anuncia quando o número muda -->
         <p class="agenda__contador" data-agenda-contador role="status">0 agendamentos</p>
         <p class="painel__texto" data-agenda-vazia>Nenhum agendamento ainda.</p>
@@ -315,6 +323,9 @@
   <footer class="rodape">
     <p>&copy; 2026 Patinhas &amp; Cia · AgendaPet Web · Projeto acadêmico</p>
   </footer>
+
+  <!-- US09: aviso temporário (toast). Some sozinho depois de alguns segundos (setTimeout). -->
+  <div class="toast" data-toast role="status" aria-live="polite" hidden></div>
 
   <!-- type="module": permite usar import/export (ESM) no navegador -->
   <script type="module" src="js/app.js"></script>

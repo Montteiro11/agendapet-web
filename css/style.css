@@ -192,6 +192,17 @@ h3 {
   outline-color: var(--cor-texto-claro);
 }
 
+/* Relógio (US09) */
+.relogio {
+  margin: 0;
+  color: var(--cor-texto-claro);
+}
+
+.relogio__hora {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums; /* números com a mesma largura: o texto não "pula" */
+}
+
 /* ---------- 5. Menu ---------- */
 .menu__lista {
   display: flex;
@@ -554,6 +565,42 @@ kbd {
   margin-bottom: var(--espaco-3);
 }
 
+/* Lembretes (US09) */
+.lembretes {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--espaco-2);
+  margin-bottom: var(--espaco-3);
+  padding: var(--espaco-2) var(--espaco-3);
+  border-radius: var(--raio);
+  background-color: var(--cor-sucesso-fundo);
+}
+
+.lembretes__texto {
+  margin: 0;
+  font-weight: 600;
+}
+
+/* Etiquetas de lembrete dentro do item */
+.alerta {
+  padding: 0.125rem var(--espaco-2);
+  border-radius: 999px;
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+
+.alerta--em-breve {
+  background-color: var(--cor-destaque-claro);
+  color: var(--cor-etiqueta-texto);
+}
+
+.alerta--atrasado {
+  background-color: var(--cor-perigo);
+  color: var(--cor-texto-claro);
+}
+
 .agenda__contador {
   margin: 0 0 var(--espaco-2);
   font-weight: 700;
@@ -596,6 +643,18 @@ kbd {
 .agenda__item--cancelado .agenda__resumo {
   text-decoration: line-through;
   color: var(--cor-texto-suave);
+}
+
+/* Lembretes (US09). Ficam DEPOIS de .agenda__item: com a mesma especificidade
+   (uma classe), vence a regra que aparece por último no arquivo. */
+/* Item a 15 minutos ou menos: borda laranja */
+.agenda__item--em-breve {
+  border-left-color: var(--cor-destaque);
+}
+
+/* Item atrasado: borda vermelha */
+.agenda__item--atrasado {
+  border-left-color: var(--cor-perigo);
 }
 
 /* Destaque ao passar o mouse (classe colocada pelo JS no mouseover) */
@@ -800,6 +859,26 @@ kbd {
 
 .botao--perigo:hover {
   background-color: var(--cor-perigo-hover);
+}
+
+/* ---------- 9b. Aviso temporário / toast (US09) ---------- */
+.toast {
+  position: fixed;
+  bottom: var(--espaco-4);
+  left: 50%;
+  z-index: 20;
+  max-width: calc(100% - 2 * var(--espaco-3));
+  padding: var(--espaco-3) var(--espaco-4);
+  border-radius: var(--raio);
+  background-color: var(--cor-texto);
+  color: var(--cor-fundo);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+  font-weight: 600;
+  transform: translateX(-50%); /* centraliza na horizontal */
+}
+
+.toast[hidden] {
+  display: none;
 }
 
 /* ---------- 10. Rodapé ---------- */

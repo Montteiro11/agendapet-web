@@ -5,7 +5,9 @@
   "type": "module",
   "scripts": {
     "start": "http-server -c-1 -o",
-    "test": "node --test tests/dominio.test.js"
+    "test": "node --test tests/dominio.test.js",
+    "fechamento": "node scripts/fechamento-dia.js",
+    "validar": "node scripts/validar-agenda.cjs"
   },
   "keywords": [
     "agendamento",

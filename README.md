@@ -97,6 +97,53 @@ Kanban: https://trello.com/invite/b/6ad7b4650e20d991aeb3ed0c/ATTI16f8530ccd3f003
 - **Pausar/Retomar lembretes:** o botão chama `clearInterval` e guarda `null` no lugar do id do timer. Ao retomar, um novo `setInterval` só é criado se não houver outro rodando (sem timers duplicados).
 - O cálculo fica em `js/dominio/lembretes.js` (sem DOM e sem timers), com testes em `npm test`.
 
+
+### Projeto Node.js e relatório de fechamento (US11)
+
+**Scripts do `package.json`**
+
+| Comando | O que faz |
+|---|---|
+| `npm start` | Sobe o servidor local (`http-server`) e abre a página. |
+| `npm test` | Roda os testes automáticos do domínio (`node:test`). |
+| `npm run fechamento` | Imprime no terminal o fechamento do dia lendo `data/agenda-exemplo.json`. Aceita um dia e um arquivo: `npm run fechamento -- 2026-10-30 data/agenda-exemplo.json`. |
+| `npm run validar` | Valida `data/agenda-exemplo.json` (campos obrigatórios, data e hora válidas, status, endereço do domiciliar, protocolo repetido e conflito de horário). Aceita outro arquivo: `npm run validar -- data/agenda-invalida.json`. Termina com `process.exit(1)` se houver erro. |
+
+- `data/agenda-exemplo.json` tem 10 agendamentos no mesmo formato do botão **Exportar agenda** da página, então um arquivo exportado também pode ser validado e fechado pelos scripts.
+- `data/agenda-invalida.json` tem erros de propósito, para demonstrar o validador.
+- `scripts/fechamento-dia.js` importa os **mesmos módulos** de `js/dominio/` usados na página: a regra do fechamento é uma só, no navegador e no terminal.
+
+**Instalação local x global**
+
+| | Local (`--save-dev`) | Global (`-g`) |
+|---|---|---|
+| Onde fica | Na pasta `node_modules/` do projeto | Numa pasta do computador, fora do projeto |
+| Quem usa | Só este projeto | Qualquer pasta, pelo terminal |
+| Vai para o `package.json`? | Sim, em `devDependencies` | Não |
+| Quem clona o projeto | Instala tudo com `npm install` | Precisa instalar por conta própria |
+| Quando usar | Ferramentas de que o projeto depende (servidor, testes, linter) | Ferramentas de uso geral do computador |
+
+- **O que instalei e onde:** o `http-server` foi instalado **localmente** como dependência de desenvolvimento (`npm install --save-dev http-server`) e é usado pelo `npm start`. Não instalei nada globalmente para este projeto: assim, quem clonar o repositório só precisa do Node.js e de um `npm install`.
+- **Comandos:**
+  - `npm install --save-dev http-server`: instala localmente, como dependência de desenvolvimento.
+  - `npm install -g <pacote>`: instala globalmente (não usado neste projeto).
+  - `npm ls`: lista os pacotes instalados no projeto.
+  - `npm ls -g --depth=0`: lista os pacotes globais, só o primeiro nível.
+  - `npx http-server`: executa um pacote sem instalar globalmente (usa o local, se existir).
+
+**CommonJS x ESM**
+
+| | CommonJS | ESM (ES Modules) |
+|---|---|---|
+| Importar | `const fs = require('fs')` | `import { readFile } from 'node:fs/promises'` |
+| Exportar | `module.exports = { ... }` | `export function ...` |
+| Extensão | `.cjs` (ou `.js` sem `"type": "module"`) | `.mjs` (ou `.js` com `"type": "module"`) |
+| `"type"` no `package.json` | padrão do Node quando não há `"type"` | `"type": "module"` |
+| Carregamento | Síncrono, na hora em que o `require` roda | Analisado antes de executar; permite `await` no topo do arquivo |
+| No navegador | Não funciona sem ferramenta extra | Funciona com `<script type="module">` |
+
+- **Escolha:** o projeto usa **ESM** (`"type": "module"`) porque o mesmo código de `js/dominio/` precisa rodar no navegador e no Node, e o navegador só entende `import`/`export`. O `scripts/validar-agenda.cjs` é **CommonJS** de propósito, com `require` de `fs` e `path`, para mostrar o outro formato: a extensão `.cjs` faz o Node tratá-lo como CommonJS mesmo com `"type": "module"`.
+
 ## Autoria
 - Desenvolvido por **Vanessa Monteiro Paim**.
 

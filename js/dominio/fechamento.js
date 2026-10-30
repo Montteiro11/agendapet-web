@@ -26,7 +26,9 @@ export function calcularFechamento(lista, dia, agora = new Date()) {
 
   // 3. reduce: soma os valores. Faturamento = SÓ os concluídos.
   //    "soma" começa em 0 e, a cada item, recebe soma + valor do item.
-  const faturamento = concluidos.reduce((soma, agendamento) => soma + agendamento.calcularValor(), 0);
+  const faturamento = concluidos.reduce((soma, agendamento) => {
+    return soma + agendamento.calcularValor();
+  }, 0);
   const previsto = agendados.reduce((soma, agendamento) => soma + agendamento.calcularValor(), 0);
 
   // 4. Laço for: conta quantos atendimentos de cada serviço (sem os cancelados).

@@ -1,0 +1,36 @@
+{
+  // Configurações do depurador do VS Code (US12).
+  // Abra a aba "Executar e Depurar" (Ctrl + Shift + D), escolha uma
+  // configuração na lista lá em cima e aperte F5.
+  "version": "0.2.0",
+  "configurations": [
+    {
+      // Roda o fechamento do dia (o mesmo do "npm run fechamento") com o depurador ligado
+      "type": "node",
+      "request": "launch",
+      "name": "Depurar fechamento do dia (Node)",
+      "program": "${workspaceFolder}/scripts/fechamento-dia.js",
+      "args": ["2026-10-30", "data/agenda-exemplo.json"],
+      "cwd": "${workspaceFolder}",
+      "skipFiles": ["<node_internals>/**"]
+    },
+    {
+      // Roda os testes automáticos com o depurador ligado
+      "type": "node",
+      "request": "launch",
+      "name": "Depurar testes do domínio (Node)",
+      "program": "${workspaceFolder}/tests/dominio.test.js",
+      "cwd": "${workspaceFolder}",
+      "skipFiles": ["<node_internals>/**"]
+    },
+    {
+      // Opcional: abre a página no Chrome com o depurador do VS Code.
+      // Antes, deixe o "npm start" rodando em outro terminal.
+      "type": "chrome",
+      "request": "launch",
+      "name": "Depurar página no Chrome",
+      "url": "http://127.0.0.1:8080",
+      "webRoot": "${workspaceFolder}"
+    }
+  ]
+}

@@ -144,6 +144,11 @@ Kanban: https://trello.com/invite/b/6ad7b4650e20d991aeb3ed0c/ATTI16f8530ccd3f003
 
 - **Escolha:** o projeto usa **ESM** (`"type": "module"`) porque o mesmo código de `js/dominio/` precisa rodar no navegador e no Node, e o navegador só entende `import`/`export`. O `scripts/validar-agenda.cjs` é **CommonJS** de propósito, com `require` de `fs` e `path`, para mostrar o outro formato: a extensão `.cjs` faz o Node tratá-lo como CommonJS mesmo com `"type": "module"`.
 
+### Depuração e relatório de bug (US12)
+- `.vscode/launch.json` tem três configurações: **Depurar fechamento do dia (Node)**, **Depurar testes do domínio (Node)** e, opcional, **Depurar página no Chrome**.
+- Para praticar, foi introduzido um **erro controlado** no fechamento (o faturamento somava os cancelados). Ele foi encontrado com **breakpoint**, **breakpoint condicional**, inspeção de variáveis, **Watch** e **Call Stack**, e corrigido em um commit `fix`.
+- Relatório completo em [docs/bug-report.md](docs/bug-report.md), com a evidência em `docs/depuracao.png`.
+
 ## Autoria
 - Desenvolvido por **Vanessa Monteiro Paim**.
 

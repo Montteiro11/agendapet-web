@@ -45,10 +45,8 @@ Entregar à Patinhas & Cia um painel web que cadastre, valide e acompanhe os age
 2. Preferência de tema na US08 (manter só agenda e filtro).
 3. Destaque ao passar o mouse e detalhes visuais da US06.
 
-## Resultado (preencher no fim da sprint)
+## Resultado (fim da sprint)
 - Pontos planejados: 48
-- Pontos entregues:
-- O que ficou de fora e por quê:
-
-## Trabalho não planejado##
+- Pontos entregues: 48 (as 12 histórias)
+- O que ficou de fora e por quê: nada do backlog. Dos bônus, não foram feitos o GitHub Pages e o @media print, por falta de tempo.
 - Trabalho não planejado: AJ01 – correção do nome da autora (1 pt).

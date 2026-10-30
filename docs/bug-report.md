@@ -44,8 +44,8 @@ const concluidos = doDia.filter((agendamento) => agendamento.status === STATUS.C
 ```
 
 ## Correção
-- Commit: `fix(US12): faturamento soma apenas atendimentos concluídos` <!-- cole aqui o link do commit -->
-- Pull Request: <!-- cole aqui o link do PR -->
+- Commit: [fix(US12): faturamento soma apenas atendimentos concluídos](https://github.com/Montteiro11/agendapet-web/pull/28/changes/33c9dcf577202bb8532e83059f5af0db61941a8b)
+- Pull Request: https://github.com/Montteiro11/agendapet-web/pull/28
 - Depois da correção: `npm run fechamento` mostra **R$ 430,00** e `npm test` volta a ter **14 testes passando**.
 
 ## Como evitar

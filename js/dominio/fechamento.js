@@ -20,7 +20,7 @@ export function calcularFechamento(lista, dia, agora = new Date()) {
   const doDia = filtrarAgendamentos(lista, (agendamento) => agendamento.data === dia);
 
   // 2. filter: separa por status
-  const concluidos = doDia.filter((agendamento) => agendamento.status !== STATUS.AGENDADO);
+  const concluidos = doDia.filter((agendamento) => agendamento.status === STATUS.CONCLUIDO);
   const agendados = doDia.filter((agendamento) => agendamento.status === STATUS.AGENDADO);
   const cancelados = doDia.filter((agendamento) => agendamento.status === STATUS.CANCELADO);
 
